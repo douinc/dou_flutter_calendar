@@ -31,6 +31,26 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   DateTime? selectedDate;
   final List<CalendarDate> _selectedDates = [];
+  bool _isInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      final now = DateTime.now();
+      selectedDate = now;
+      final days = _generateDays(now);
+      final selected = days.firstWhere(
+        (d) =>
+            d.date.year == now.year &&
+            d.date.month == now.month &&
+            d.date.day == now.day,
+        orElse: () => CalendarDate(date: now, isSelected: true),
+      );
+      _selectedDates.add(selected.copyWith(isSelected: true));
+      _isInitialized = true;
+    }
+  }
 
   List<CalendarDate> _generateDays(DateTime date) {
     final now = DateTime.now();
@@ -95,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: [
             Calendar(
-              // initialDate: DateTime.now(),
+              initialDate: DateTime.now(),
               onDateSelected: (date) {
                 setState(() {
                   selectedDate = date;
