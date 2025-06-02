@@ -25,7 +25,7 @@ and the Flutter guide for
 
 ## Demo
 
-![Calendar Demo](docs/calendar_demo.mp4)
+[View Calendar Demo](docs/calendar_demo.mp4)
 
 A highly customizable and feature-rich calendar widget for Flutter applications. This package provides flexible calendar implementations with various views and customization options.
 
