@@ -7,6 +7,7 @@ import 'calendar_month.dart';
 
 class Calendar extends StatefulWidget {
   final DateTime? initialDate;
+  final Function(DateTime)? onDateSelected;
   final Function(List<CalendarDate>)? onDatesSelected;
   final List<CalendarDate>? initialSelectedDates;
   final bool multiSelect;
@@ -18,6 +19,7 @@ class Calendar extends StatefulWidget {
   const Calendar({
     super.key,
     this.initialDate,
+    this.onDateSelected,
     this.onDatesSelected,
     this.initialSelectedDates,
     this.multiSelect = false,
@@ -45,6 +47,13 @@ class _CalendarState extends State<Calendar> {
       _selectedDates = [CalendarDate(date: widget.initialDate!)];
     }
     _updateDays();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_selectedDates.isNotEmpty) {
+        widget.onDateSelected?.call(_selectedDates.first.date);
+        widget.onDatesSelected?.call(_selectedDates);
+      }
+    });
   }
 
   @override
@@ -91,6 +100,7 @@ class _CalendarState extends State<Calendar> {
       } else {
         _selectedDates = [calendarDate];
       }
+      widget.onDateSelected?.call(date);
       widget.onDatesSelected?.call(_selectedDates);
     });
   }

@@ -30,7 +30,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   DateTime? selectedDate;
-  List<CalendarDate> _selectedDates = [];
   bool _isInitialized = false;
 
   @override
@@ -38,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.didChangeDependencies();
     if (!_isInitialized) {
       final now = DateTime.now();
-      selectedDate = now;
+      // selectedDate = now;
       _isInitialized = true;
     }
   }
@@ -107,10 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Calendar(
               initialDate: DateTime.now(),
-              multiSelect: false,
-              onDatesSelected: (dates) {
+              onDateSelected: (date) {
                 setState(() {
-                  _selectedDates = dates;
+                  selectedDate = date;
                 });
               },
               onGenerateDays: _generateDays,
