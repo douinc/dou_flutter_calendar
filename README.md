@@ -23,11 +23,12 @@ and the Flutter guide for
 [![GitHub stars](https://img.shields.io/github/stars/douinc/dou_flutter_calendar?cache=1)](https://github.com/douinc/dou_flutter_calendar/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/douinc/dou_flutter_calendar?cache=1)](https://github.com/douinc/dou_flutter_calendar/network/members)
 
+A highly customizable and feature-rich calendar widget for Flutter applications. This package provides flexible calendar implementations with various views and customization options.
+
 ## Demo
 
-[View Calendar Demo](docs/calendar_demo.mp4)
+![Calendar Demo](docs/calendar_demo.gif)
 
-A highly customizable and feature-rich calendar widget for Flutter applications. This package provides flexible calendar implementations with various views and customization options.
 
 ## Features
 
