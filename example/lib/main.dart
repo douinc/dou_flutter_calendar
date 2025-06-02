@@ -11,36 +11,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dou Flutter Calendar Example',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(),
+      title: 'Calendar Example',
+      theme: ThemeData(),
+      home: const CalendarExampleScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+class CalendarExampleScreen extends StatefulWidget {
+  const CalendarExampleScreen({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CalendarExampleScreen> createState() => _CalendarExampleScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  DateTime? selectedDate;
-  bool _isInitialized = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_isInitialized) {
-      final now = DateTime.now();
-      // selectedDate = now;
-      _isInitialized = true;
-    }
-  }
+class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
+  CalendarViewType _selectedViewType = CalendarViewType.singleLine;
+  DateTime _selectedDate = DateTime.now();
+  List<CalendarDate> _selectedDates = [];
+  bool _multiSelect = false;
 
   List<CalendarDate> _generateDays(DateTime date) {
     final now = DateTime.now();
@@ -97,31 +86,114 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dou Flutter Calendar Example'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Calendar Example'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Calendar(
-              initialDate: DateTime.now(),
+      body: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedViewType = CalendarViewType.singleLine;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      _selectedViewType == CalendarViewType.singleLine
+                          ? Colors.blue
+                          : Colors.grey,
+                ),
+                child: const Text(
+                  '한 줄 캘린더',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedViewType = CalendarViewType.grid;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _selectedViewType == CalendarViewType.grid
+                      ? Colors.blue
+                      : Colors.grey,
+                ),
+                child: const Text(
+                  '그리드 캘린더',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          if (_selectedViewType == CalendarViewType.grid)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 10,
+              children: [
+                Switch(
+                  value: _multiSelect,
+                  onChanged: (value) {
+                    setState(() {
+                      _multiSelect = value;
+                    });
+                  },
+                ),
+                Text(_multiSelect ? '다중 선택' : '단일 선택'),
+              ],
+            ),
+          if (_selectedViewType == CalendarViewType.singleLine)
+            SingleLineCalendar(
+              viewType: _selectedViewType,
+              initialDate: _selectedDate,
+              initialSelectedDates: _selectedDates,
               onDateSelected: (date) {
                 setState(() {
-                  selectedDate = date;
+                  _selectedDate = date;
+                });
+              },
+              onGenerateDays: _generateDays,
+              style: const CalendarStyle(
+                selectionColor: Colors.blue,
+                dateTextStyle: TextStyle(fontSize: 16),
+                weekdayTextStyle: TextStyle(fontSize: 12),
+              ),
+              headerDateFormat: 'MM월',
+            )
+          else
+            Calendar(
+              initialDate: _selectedDate,
+              initialSelectedDates: _selectedDates,
+              multiSelect: _multiSelect,
+              onDateSelected: (date) {
+                setState(() {
+                  _selectedDate = date;
+                });
+              },
+              onDatesSelected: (dates) {
+                setState(() {
+                  _selectedDates = dates;
                 });
               },
               onGenerateDays: _generateDays,
               headerDateFormat: 'MM월',
             ),
-            const SizedBox(height: 20),
-            if (selectedDate != null)
+          Column(
+            children: [
               Text(
-                'Selected date: ${selectedDate!.year}-${selectedDate!.month}-${selectedDate!.day}',
-                style: Theme.of(context).textTheme.titleMedium,
+                '선택된 날짜: ${_selectedDate.year}년 ${_selectedDate.month}월 ${_selectedDate.day}일',
+                style: const TextStyle(fontSize: 16),
               ),
-          ],
-        ),
+              if (_multiSelect && _selectedDates.isNotEmpty)
+                Text(
+                  '선택된 날짜들: ${_selectedDates.map((d) => '${d.date.month}/${d.date.day}').join(', ')}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

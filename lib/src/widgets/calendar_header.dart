@@ -7,6 +7,7 @@ class CalendarHeader extends StatelessWidget {
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
   final String? dateFormat;
+  final bool showNavigation;
 
   const CalendarHeader({
     super.key,
@@ -14,6 +15,7 @@ class CalendarHeader extends StatelessWidget {
     required this.onPreviousMonth,
     required this.onNextMonth,
     this.dateFormat,
+    this.showNavigation = true,
   });
 
   @override
@@ -23,20 +25,22 @@ class CalendarHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            onPressed: onPreviousMonth,
-          ),
+          if (showNavigation)
+            IconButton(
+              icon: const Icon(Icons.chevron_left),
+              onPressed: onPreviousMonth,
+            ),
           Text(
             dateFormat != null
                 ? DateFormat(dateFormat).format(currentDate)
                 : CalendarUtils.getMonthName(currentDate),
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            onPressed: onNextMonth,
-          ),
+          if (showNavigation)
+            IconButton(
+              icon: const Icon(Icons.chevron_right),
+              onPressed: onNextMonth,
+            ),
         ],
       ),
     );

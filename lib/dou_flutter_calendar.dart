@@ -1,5 +1,7 @@
-library;
+library dou_flutter_calendar;
 
+export 'src/models/calendar_style.dart';
+export 'src/widgets/single_line_calendar.dart';
 export 'src/widgets/calendar.dart';
 export 'src/widgets/calendar_header.dart';
 export 'src/widgets/calendar_day.dart';

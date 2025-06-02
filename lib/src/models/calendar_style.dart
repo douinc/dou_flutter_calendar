@@ -51,3 +51,8 @@ class CalendarStyle {
     );
   }
 }
+
+enum CalendarViewType {
+  singleLine, // 한 줄로 날짜 표시
+  grid, // 그리드 형태로 날짜 표시
+}
