@@ -30,7 +30,7 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
   DateTime _selectedDate = DateTime.now();
   List<CalendarDate> _selectedDates = [];
   bool _multiSelect = false;
-  Locale _selectedLocale = const Locale('ko');
+  Locale _selectedLocale = const Locale('en');
 
   final List<Map<String, dynamic>> _locales = [
     {'name': 'English', 'locale': const Locale('en')},
@@ -70,6 +70,8 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                 onPressed: () {
                   setState(() {
                     _selectedViewType = CalendarViewType.singleLine;
+                    _selectedDate = DateTime.now();
+                    _selectedDates = [];
                   });
                 },
                 style: ElevatedButton.styleFrom(
@@ -87,6 +89,8 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                 onPressed: () {
                   setState(() {
                     _selectedViewType = CalendarViewType.grid;
+                    _selectedDate = DateTime.now();
+                    _selectedDates = [];
                   });
                 },
                 style: ElevatedButton.styleFrom(

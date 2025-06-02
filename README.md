@@ -13,18 +13,19 @@ and the Flutter guide for
 
 # Dou Flutter Calendar
 
-A customizable and feature-rich calendar widget for Flutter applications. This package provides a flexible calendar implementation that can be used for various calendar-related features in your Flutter projects.
+A highly customizable and feature-rich calendar widget for Flutter applications. This package provides flexible calendar implementations with various views and customization options.
 
 ## Features
 
-- Single line calendar view
-- Full calendar view with month navigation
-- Customizable calendar styles
-- Event support
-- Date selection functionality
-- Week and month views
-- Header customization
-- Day cell customization
+- Multiple calendar view types:
+  - Grid view (traditional month view)
+  - Single line view (horizontal scrolling)
+- Multi-date selection support
+- Customizable styles and themes
+- Localization support
+- Flexible date formatting
+- Custom day rendering capabilities
+- Header customization options
 
 ## Installation
 
@@ -35,72 +36,121 @@ dependencies:
   dou_flutter_calendar: ^0.0.1
 ```
 
+Then run:
+
+```bash
+flutter pub get
+```
+
 ## Usage
 
-Import the package in your Dart code:
+### Basic Implementation
 
 ```dart
 import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
-```
 
-### Basic Calendar Implementation
-
-```dart
 Calendar(
-  onDateSelected: (date) {
-    // Handle date selection
-  },
-  events: [
-    CalendarEvent(
-      date: DateTime.now(),
-      title: 'Sample Event',
-    ),
-  ],
-)
-```
-
-### Single Line Calendar
-
-```dart
-SingleLineCalendar(
-  onDateSelected: (date) {
+  initialDate: DateTime.now(),
+  onDateSelected: (DateTime date) {
     // Handle date selection
   },
 )
 ```
 
-## Components
-
-The package includes several customizable components:
-
-- `Calendar`: Main calendar widget
-- `SingleLineCalendar`: Compact single-line calendar view
-- `CalendarHeader`: Customizable calendar header
-- `CalendarDay`: Individual day cell widget
-- `CalendarWeek`: Week view widget
-- `CalendarMonth`: Month view widget
-
-## Customization
-
-You can customize the calendar's appearance using the `CalendarStyle` class:
+### Grid Calendar View
 
 ```dart
 Calendar(
+  viewType: CalendarViewType.grid,
+  initialDate: DateTime.now(),
+  onDateSelected: (DateTime date) {
+    // Handle date selection
+  },
   style: CalendarStyle(
-    // Customize your calendar style
+    // Customize your calendar appearance
   ),
 )
 ```
 
+### Single Line Calendar View
+
+```dart
+Calendar(
+  viewType: CalendarViewType.singleLine,
+  initialDate: DateTime.now(),
+  onDateSelected: (DateTime date) {
+    // Handle date selection
+  },
+)
+```
+
+### Multi-Select Calendar
+
+```dart
+Calendar(
+  multiSelect: true,
+  initialSelectedDates: [
+    CalendarDate(date: DateTime.now()),
+  ],
+  onDatesSelected: (List<CalendarDate> dates) {
+    // Handle multiple date selection
+  },
+)
+```
+
+## Customization
+
+### Calendar Style
+
+You can customize the appearance of your calendar using `CalendarStyle`:
+
+```dart
+Calendar(
+  style: CalendarStyle(
+    // Add your custom styles here
+  ),
+)
+```
+
+### Localization
+
+The calendar supports different locales:
+
+```dart
+Calendar(
+  locale: const Locale('ko', 'KR'), // Korean locale
+  // ... other properties
+)
+```
+
+### Custom Date Format
+
+You can specify custom date formats for the header:
+
+```dart
+Calendar(
+  headerDateFormat: 'MMMM yyyy',
+  // ... other properties
+)
+```
+
+## Requirements
+
+- Flutter SDK: ^3.8.1
+- Dart SDK: ^3.8.1
+- Flutter: >= 1.17.0
+
 ## Dependencies
 
-- Flutter SDK: >=1.17.0
-- Dart SDK: ^3.8.1
-- intl: ^0.19.0
+- intl: ^0.20.2
 
 ## License
 
-This project is licensed under the terms specified in the LICENSE file.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Author
+
+Created and maintained by [Dou](https://dou.so).
 
 ## Contributing
 

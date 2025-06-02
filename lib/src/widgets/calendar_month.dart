@@ -3,7 +3,6 @@ import '../models/calendar_date.dart';
 import '../models/calendar_style.dart';
 import '../utils/calendar_utils.dart';
 import 'calendar_week.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class CalendarMonth extends StatelessWidget {

@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class CalendarDate {
   final DateTime date;
   final bool isSelected;
