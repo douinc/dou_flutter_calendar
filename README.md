@@ -11,29 +11,97 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/to/develop-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+# Dou Flutter Calendar
+
+A customizable and feature-rich calendar widget for Flutter applications. This package provides a flexible calendar implementation that can be used for various calendar-related features in your Flutter projects.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Single line calendar view
+- Full calendar view with month navigation
+- Customizable calendar styles
+- Event support
+- Date selection functionality
+- Week and month views
+- Header customization
+- Day cell customization
 
-## Getting started
+## Installation
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Add this to your package's `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  dou_flutter_calendar: ^0.0.1
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Import the package in your Dart code:
 
 ```dart
-const like = 'sample';
+import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
 ```
 
-## Additional information
+### Basic Calendar Implementation
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```dart
+Calendar(
+  onDateSelected: (date) {
+    // Handle date selection
+  },
+  events: [
+    CalendarEvent(
+      date: DateTime.now(),
+      title: 'Sample Event',
+    ),
+  ],
+)
+```
+
+### Single Line Calendar
+
+```dart
+SingleLineCalendar(
+  onDateSelected: (date) {
+    // Handle date selection
+  },
+)
+```
+
+## Components
+
+The package includes several customizable components:
+
+- `Calendar`: Main calendar widget
+- `SingleLineCalendar`: Compact single-line calendar view
+- `CalendarHeader`: Customizable calendar header
+- `CalendarDay`: Individual day cell widget
+- `CalendarWeek`: Week view widget
+- `CalendarMonth`: Month view widget
+
+## Customization
+
+You can customize the calendar's appearance using the `CalendarStyle` class:
+
+```dart
+Calendar(
+  style: CalendarStyle(
+    // Customize your calendar style
+  ),
+)
+```
+
+## Dependencies
+
+- Flutter SDK: >=1.17.0
+- Dart SDK: ^3.8.1
+- intl: ^0.19.0
+
+## License
+
+This project is licensed under the terms specified in the LICENSE file.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
