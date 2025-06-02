@@ -34,14 +34,17 @@ class SingleLineCalendar extends StatefulWidget {
 class _SingleLineCalendarState extends State<SingleLineCalendar> {
   late DateTime _currentDate;
   late List<CalendarDate> _selectedDates;
-  late PageController _pageController;
   final ScrollController _scrollController = ScrollController();
+  late List<CalendarDate> _days;
+  DateTime _startDate = DateTime.now();
+  DateTime _endDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
     _currentDate = widget.initialDate;
     _selectedDates = widget.initialSelectedDates ?? [];
+    _initializeDates();
     if (_selectedDates.isEmpty) {
       _selectedDates = [CalendarDate(date: _currentDate)];
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -49,12 +52,47 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
         _scrollToSelectedDate();
       });
     }
-    _pageController = PageController(initialPage: 0);
+  }
+
+  void _initializeDates() {
+    _startDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
+    _endDate = DateTime(_currentDate.year, _currentDate.month + 1, 1);
+    _days = _getDaysInRange(_startDate, _endDate);
+  }
+
+  List<CalendarDate> _getDaysInRange(DateTime start, DateTime end) {
+    final days = <CalendarDate>[];
+    var current = start;
+
+    while (current.isBefore(end)) {
+      final firstDayOfMonth = DateTime(current.year, current.month, 1);
+      final lastDayOfMonth = DateTime(current.year, current.month + 1, 0);
+
+      final firstWeekday = firstDayOfMonth.weekday;
+      for (var i = firstWeekday - 1; i > 0; i--) {
+        final previousMonthDay = firstDayOfMonth.subtract(Duration(days: i));
+        days.add(CalendarDate(date: previousMonthDay));
+      }
+
+      for (var i = 1; i <= lastDayOfMonth.day; i++) {
+        final currentDate = DateTime(current.year, current.month, i);
+        days.add(CalendarDate(date: currentDate));
+      }
+
+      final remainingDays = 42 - (firstWeekday - 1 + lastDayOfMonth.day);
+      for (var i = 1; i <= remainingDays; i++) {
+        final nextMonthDay = lastDayOfMonth.add(Duration(days: i));
+        days.add(CalendarDate(date: nextMonthDay));
+      }
+
+      current = DateTime(current.year, current.month + 1, 1);
+    }
+
+    return days;
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -63,8 +101,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     if (_selectedDates.isEmpty) return;
 
     final selectedDate = _selectedDates.first.date;
-    final days = _getDaysInMonth(_currentDate);
-    final index = days.indexWhere(
+    final index = _days.indexWhere(
       (day) =>
           day.date.year == selectedDate.year &&
           day.date.month == selectedDate.month &&
@@ -73,15 +110,10 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
     if (index != -1) {
       final screenWidth = MediaQuery.of(context).size.width;
-      final itemWidth = widget.itemWidth + 8; // itemWidth + margin
-      final totalWidth = days.length * itemWidth;
+      final itemWidth = widget.itemWidth + 8;
       final centerOffset = (screenWidth - itemWidth) / 2;
-
-      // 선택된 날짜가 가운데 오도록 스크롤 위치 계산
       final targetOffset = (index * itemWidth) - centerOffset;
-
-      // 스크롤 범위 제한
-      final maxOffset = totalWidth - screenWidth;
+      final maxOffset = (_days.length * itemWidth) - screenWidth;
       final clampedOffset = targetOffset.clamp(0.0, maxOffset);
 
       _scrollController.animateTo(
@@ -89,43 +121,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    }
-  }
-
-  List<CalendarDate> _getDaysInMonth(DateTime date) {
-    if (widget.days != null) {
-      return widget.days!;
-    } else if (widget.onGenerateDays != null) {
-      return widget.onGenerateDays!(date);
-    } else {
-      final firstDayOfMonth = DateTime(date.year, date.month, 1);
-      final lastDayOfMonth = DateTime(date.year, date.month + 1, 0);
-
-      // 이전 달의 마지막 날짜들
-      final previousMonthDays = <CalendarDate>[];
-      final firstWeekday = firstDayOfMonth.weekday;
-      for (var i = firstWeekday - 1; i > 0; i--) {
-        final previousMonthDay = firstDayOfMonth.subtract(Duration(days: i));
-        previousMonthDays.add(CalendarDate(date: previousMonthDay));
-      }
-
-      // 현재 달의 날짜들
-      final currentMonthDays = <CalendarDate>[];
-      for (var i = 1; i <= lastDayOfMonth.day; i++) {
-        final currentDate = DateTime(date.year, date.month, i);
-        currentMonthDays.add(CalendarDate(date: currentDate));
-      }
-
-      // 다음 달의 날짜들
-      final nextMonthDays = <CalendarDate>[];
-      final remainingDays =
-          42 - (previousMonthDays.length + currentMonthDays.length);
-      for (var i = 1; i <= remainingDays; i++) {
-        final nextMonthDay = lastDayOfMonth.add(Duration(days: i));
-        nextMonthDays.add(CalendarDate(date: nextMonthDay));
-      }
-
-      return [...previousMonthDays, ...currentMonthDays, ...nextMonthDays];
     }
   }
 
@@ -144,63 +139,50 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
           dateFormat: 'MM월 dd일',
           showNavigation: false,
         ),
-        SizedBox(
-          height: widget.height + 24,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentDate = DateTime(
-                  _currentDate.year,
-                  _currentDate.month + index,
-                );
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _scrollToSelectedDate();
-                });
-              });
-            },
-            itemBuilder: (context, index) {
-              final days = _getDaysInMonth(_currentDate);
-              return ListView.builder(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                itemCount: days.length,
-                itemBuilder: (context, dayIndex) {
-                  final day = days[dayIndex];
-                  final weekday = day.date.weekday;
-                  const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-                  final isCurrentMonth = day.date.month == _currentDate.month;
-                  final otherMonthOpacity =
-                      widget.style?.otherMonthOpacity ?? 0.2;
+        GestureDetector(
+          onHorizontalDragEnd: (details) {
+            if (details.primaryVelocity! > 0) {
+              _moveToPreviousDay();
+            } else if (details.primaryVelocity! < 0) {
+              _moveToNextDay();
+            }
+          },
+          child: SizedBox(
+            height: widget.height + 24,
+            child: ListView.builder(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _days.length,
+              itemBuilder: (context, dayIndex) {
+                final day = _days[dayIndex];
+                final weekday = day.date.weekday;
+                const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+                final isCurrentMonth = day.date.month == displayDate.month;
 
-                  return Container(
-                    width: widget.itemWidth,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Column(
-                      children: [
-                        Text(
-                          weekdays[weekday - 1],
-                          style:
-                              (widget.style?.weekdayTextStyle ??
-                                      const TextStyle(fontSize: 12))
-                                  .copyWith(
-                                    color:
-                                        (weekday == 7
-                                                ? Colors.red
-                                                : Colors.grey)
-                                            .withAlpha(
-                                              isCurrentMonth ? 255 : 51,
-                                            ),
-                                  ),
-                        ),
-                        const SizedBox(height: 4),
-                        _buildDayItem(day),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
+                return Container(
+                  width: widget.itemWidth,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Column(
+                    children: [
+                      Text(
+                        weekdays[weekday - 1],
+                        style:
+                            (widget.style?.weekdayTextStyle ??
+                                    const TextStyle(fontSize: 12))
+                                .copyWith(
+                                  color:
+                                      (weekday == 7 ? Colors.red : Colors.grey)
+                                          .withAlpha(isCurrentMonth ? 255 : 51),
+                                ),
+                      ),
+                      const SizedBox(height: 4),
+                      _buildDayItem(day),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -256,15 +238,55 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     );
   }
 
+  void _moveToNextDay() {
+    if (_selectedDates.isEmpty) return;
+
+    final currentIndex = _days.indexWhere(
+      (day) =>
+          day.date.year == _selectedDates.first.date.year &&
+          day.date.month == _selectedDates.first.date.month &&
+          day.date.day == _selectedDates.first.date.day,
+    );
+
+    if (currentIndex < _days.length - 1) {
+      setState(() {
+        _selectedDates = [_days[currentIndex + 1]];
+        widget.onDateSelected?.call(_days[currentIndex + 1].date);
+        _scrollToSelectedDate();
+      });
+    }
+  }
+
+  void _moveToPreviousDay() {
+    if (_selectedDates.isEmpty) return;
+
+    final currentIndex = _days.indexWhere(
+      (day) =>
+          day.date.year == _selectedDates.first.date.year &&
+          day.date.month == _selectedDates.first.date.month &&
+          day.date.day == _selectedDates.first.date.day,
+    );
+
+    if (currentIndex > 0) {
+      setState(() {
+        _selectedDates = [_days[currentIndex - 1]];
+        widget.onDateSelected?.call(_days[currentIndex - 1].date);
+        _scrollToSelectedDate();
+      });
+    }
+  }
+
   void _onPreviousMonth() {
     setState(() {
       _currentDate = DateTime(_currentDate.year, _currentDate.month - 1);
+      _initializeDates();
     });
   }
 
   void _onNextMonth() {
     setState(() {
       _currentDate = DateTime(_currentDate.year, _currentDate.month + 1);
+      _initializeDates();
     });
   }
 }
