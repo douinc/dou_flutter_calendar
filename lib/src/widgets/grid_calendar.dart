@@ -47,9 +47,6 @@ class _GridCalendarState extends State<GridCalendar> {
     super.initState();
     _currentDate = widget.initialDate ?? DateTime.now();
     _selectedDates = widget.initialSelectedDates ?? [];
-    if (widget.initialDate != null && _selectedDates.isEmpty) {
-      _selectedDates = [CalendarDate(date: widget.initialDate!)];
-    }
     _updateDays();
 
     if (widget.locale != null) {

@@ -12,7 +12,7 @@ class CalendarUtils {
 
     final days = <CalendarDate>[];
 
-    // Add days from previous month
+    // Fill in days from the previous month to complete the first week
     for (var i = 1; i < firstWeekday; i++) {
       final previousMonthDay = firstDayOfMonth.subtract(
         Duration(days: firstWeekday - i),
@@ -20,13 +20,13 @@ class CalendarUtils {
       days.add(CalendarDate(date: previousMonthDay, isDisabled: true));
     }
 
-    // Add days of current month
+    // Add all days of the current month
     for (var i = 1; i <= daysInMonth; i++) {
       final currentDate = DateTime(date.year, date.month, i);
       days.add(CalendarDate(date: currentDate, isToday: _isToday(currentDate)));
     }
 
-    // Add days from next month
+    // Fill in days from the next month to complete the calendar grid
     final remainingDays = 42 - days.length; // 6 rows * 7 days
     for (var i = 1; i <= remainingDays; i++) {
       final nextMonthDay = lastDayOfMonth.add(Duration(days: i));
