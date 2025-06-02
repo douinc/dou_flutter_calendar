@@ -121,22 +121,27 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                 Text(_multiSelect ? 'Multi Select' : 'Single Select'),
               ],
             ),
-          Calendar(
-            locale: _selectedLocale,
-            viewType: _selectedViewType,
-            initialDate: _selectedDate,
-            initialSelectedDates: _selectedDates,
-            multiSelect: _multiSelect,
-            onDateSelected: (date) {
-              setState(() {
-                _selectedDate = date;
-              });
-            },
-            onDatesSelected: (dates) {
-              setState(() {
-                _selectedDates = dates;
-              });
-            },
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal:
+                    _selectedViewType == CalendarViewType.grid ? 16 : 0),
+            child: Calendar(
+              locale: _selectedLocale,
+              viewType: _selectedViewType,
+              initialDate: _selectedDate,
+              initialSelectedDates: _selectedDates,
+              multiSelect: _multiSelect,
+              onDateSelected: (date) {
+                setState(() {
+                  _selectedDate = date;
+                });
+              },
+              onDatesSelected: (dates) {
+                setState(() {
+                  _selectedDates = dates;
+                });
+              },
+            ),
           ),
           Column(
             children: [
