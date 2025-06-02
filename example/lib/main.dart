@@ -39,57 +39,6 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
     {'name': '中文', 'locale': const Locale('zh')},
   ];
 
-  List<CalendarDate> _generateDays(DateTime date) {
-    final now = DateTime.now();
-    return CalendarUtils.getDaysInMonth(date).map((day) {
-      if (day.date.day == 2) {
-        return day.copyWith(
-          dateLabel: Text(
-            '1 item',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 10,
-                  height: 1.2,
-                ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      }
-      if (day.date.weekday == DateTime.monday) {
-        return day.copyWith(
-          dateLabel: Text(
-            'Meeting',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 10,
-                  height: 1.2,
-                ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      }
-      if (day.date.year == now.year &&
-          day.date.month == now.month &&
-          day.date.day == now.day) {
-        return day.copyWith(
-          dateLabel: Text(
-            'Today',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 10,
-                  height: 1.2,
-                ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      }
-      return day;
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,7 +133,6 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                 _selectedDates = dates;
               });
             },
-            // headerDateFormat: 'yyyy MM',
           ),
           Column(
             children: [

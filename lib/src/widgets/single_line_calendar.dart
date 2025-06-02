@@ -9,12 +9,13 @@ class SingleLineCalendar extends StatefulWidget {
   final Function(DateTime)? onDateSelected;
   final List<CalendarDate>? initialSelectedDates;
   final List<CalendarDate>? days;
-  final List<CalendarDate> Function(DateTime)? onGenerateDays;
   final double height;
   final double itemWidth;
   final CalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
+  final Widget Function(CalendarDate calendarDate, bool isSelected)?
+  dayItemBuilder;
 
   const SingleLineCalendar({
     super.key,
@@ -23,12 +24,12 @@ class SingleLineCalendar extends StatefulWidget {
     this.onDateSelected,
     this.initialSelectedDates,
     this.days,
-    this.onGenerateDays,
     this.height = 60,
     this.itemWidth = 50,
     this.style,
     this.headerDateFormat,
     this.locale,
+    this.dayItemBuilder,
   });
 
   @override
@@ -86,21 +87,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     while (!current.isAfter(end)) {
       days.add(CalendarDate(date: current));
       current = current.add(const Duration(days: 1));
-    }
-
-    // Apply onGenerateDays if provided
-    if (widget.onGenerateDays != null) {
-      final generatedDays = widget.onGenerateDays!(_currentDate);
-      final generatedDaysMap = {
-        for (var day in generatedDays)
-          '${day.date.year}-${day.date.month}-${day.date.day}': day,
-      };
-
-      // Update days with generated data where available
-      return days.map((day) {
-        final key = '${day.date.year}-${day.date.month}-${day.date.day}';
-        return generatedDaysMap[key] ?? day;
-      }).toList();
     }
 
     return days;
@@ -238,6 +224,24 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
   Widget _buildDayItem(CalendarDate calendarDate) {
     final date = calendarDate.date;
+    final isSelected =
+        _selectedDates.isNotEmpty &&
+        _selectedDates.first.date.year == date.year &&
+        _selectedDates.first.date.month == date.month &&
+        _selectedDates.first.date.day == date.day;
+
+    if (widget.dayItemBuilder != null) {
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedDates = [calendarDate];
+            widget.onDateSelected?.call(date);
+            _scrollToSelectedDate();
+          });
+        },
+        child: widget.dayItemBuilder!(calendarDate, isSelected),
+      );
+    }
 
     return GestureDetector(
       onTap: () {
@@ -254,7 +258,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
           color: Colors.grey.withAlpha(26),
           shape: BoxShape.circle,
         ),
-        child: Center(child: calendarDate.dateLabel),
+        child: Center(child: Text(date.day.toString())),
       ),
     );
   }

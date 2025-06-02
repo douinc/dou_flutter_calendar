@@ -11,6 +11,8 @@ class CalendarWeek extends StatelessWidget {
   final CalendarStyle? style;
   final DateTime currentMonth;
   final Locale? locale;
+  final Widget Function(CalendarDate calendarDate, bool isSelected)?
+  dayItemBuilder;
 
   const CalendarWeek({
     super.key,
@@ -21,6 +23,7 @@ class CalendarWeek extends StatelessWidget {
     this.multiSelect = false,
     this.style,
     this.locale,
+    this.dayItemBuilder,
   });
 
   @override
@@ -47,6 +50,7 @@ class CalendarWeek extends StatelessWidget {
               style: style,
               isSelected: isSelected,
               locale: locale,
+              dayItemBuilder: dayItemBuilder,
             ),
           );
         }).toList(),

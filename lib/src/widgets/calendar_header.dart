@@ -49,14 +49,15 @@ class CalendarHeader extends StatelessWidget {
       initializeDateFormatting(locale!.languageCode);
     }
     final displayDate = selectedDate ?? currentDate;
-    final dateFormatter = isSingleLine
-        ? DateFormat.MMMd(locale?.languageCode)
-        : (dateFormat != null
-              ? DateFormat(dateFormat, locale?.languageCode)
+    final dateFormatter = dateFormat != null
+        ? DateFormat(dateFormat, locale?.languageCode)
+        : (isSingleLine
+              ? DateFormat.MMMd(locale?.languageCode)
               : DateFormat.yMMMM(locale?.languageCode));
 
     final dateText = dateFormatter.format(displayDate);
-    final todayText = isSingleLine && _isToday(displayDate)
+    final todayText =
+        isSingleLine && _isToday(displayDate) && dateFormat == null
         ? _getTodayText() != null
               ? ' ${_getTodayText()}'
               : ''

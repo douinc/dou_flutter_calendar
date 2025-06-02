@@ -14,6 +14,8 @@ class CalendarMonth extends StatelessWidget {
   final CalendarStyle? style;
   final DateTime currentMonth;
   final Locale? locale;
+  final Widget Function(CalendarDate calendarDate, bool isSelected)?
+  dayItemBuilder;
 
   const CalendarMonth({
     super.key,
@@ -24,6 +26,7 @@ class CalendarMonth extends StatelessWidget {
     this.multiSelect = false,
     this.style,
     this.locale,
+    this.dayItemBuilder,
   });
 
   @override
@@ -58,6 +61,7 @@ class CalendarMonth extends StatelessWidget {
             multiSelect: multiSelect,
             style: style,
             locale: locale,
+            dayItemBuilder: dayItemBuilder,
           );
         }),
       ],

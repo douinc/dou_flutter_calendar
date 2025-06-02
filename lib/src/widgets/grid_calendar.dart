@@ -4,7 +4,6 @@ import '../models/calendar_style.dart';
 import '../utils/calendar_utils.dart';
 import 'calendar_header.dart';
 import 'calendar_month.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class GridCalendar extends StatefulWidget {
@@ -14,10 +13,11 @@ class GridCalendar extends StatefulWidget {
   final List<CalendarDate>? initialSelectedDates;
   final bool multiSelect;
   final List<CalendarDate>? days;
-  final List<CalendarDate> Function(DateTime)? onGenerateDays;
   final CalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
+  final Widget Function(CalendarDate calendarDate, bool isSelected)?
+  dayItemBuilder;
 
   const GridCalendar({
     super.key,
@@ -27,10 +27,10 @@ class GridCalendar extends StatefulWidget {
     this.initialSelectedDates,
     this.multiSelect = false,
     this.days,
-    this.onGenerateDays,
     this.style,
     this.headerDateFormat,
     this.locale,
+    this.dayItemBuilder,
   });
 
   @override
@@ -75,8 +75,6 @@ class _GridCalendarState extends State<GridCalendar> {
   void _updateDays() {
     if (widget.days != null) {
       _days = widget.days!;
-    } else if (widget.onGenerateDays != null) {
-      _days = widget.onGenerateDays!(_currentDate);
     } else {
       _days = CalendarUtils.getDaysInMonth(_currentDate);
     }
@@ -132,6 +130,7 @@ class _GridCalendarState extends State<GridCalendar> {
           multiSelect: widget.multiSelect,
           style: widget.style,
           locale: widget.locale,
+          dayItemBuilder: widget.dayItemBuilder,
         ),
       ],
     );

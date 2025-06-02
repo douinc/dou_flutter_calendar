@@ -3,7 +3,6 @@ import '../models/calendar_date.dart';
 import '../models/calendar_style.dart';
 import 'single_line_calendar.dart';
 import 'grid_calendar.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class Calendar extends StatefulWidget {
@@ -13,7 +12,6 @@ class Calendar extends StatefulWidget {
   final List<CalendarDate>? initialSelectedDates;
   final bool multiSelect;
   final List<CalendarDate>? days;
-  final List<CalendarDate> Function(DateTime)? onGenerateDays;
   final CalendarStyle? style;
   final String? headerDateFormat;
   final CalendarViewType viewType;
@@ -27,7 +25,6 @@ class Calendar extends StatefulWidget {
     this.initialSelectedDates,
     this.multiSelect = false,
     this.days,
-    this.onGenerateDays,
     this.style,
     this.headerDateFormat,
     this.viewType = CalendarViewType.grid,
@@ -55,7 +52,6 @@ class _CalendarState extends State<Calendar> {
         initialDate: widget.initialDate ?? DateTime.now(),
         initialSelectedDates: widget.initialSelectedDates,
         onDateSelected: widget.onDateSelected,
-        onGenerateDays: widget.onGenerateDays,
         style: widget.style,
         headerDateFormat: widget.headerDateFormat,
         locale: widget.locale,
@@ -69,7 +65,6 @@ class _CalendarState extends State<Calendar> {
       onDatesSelected: widget.onDatesSelected,
       multiSelect: widget.multiSelect,
       days: widget.days,
-      onGenerateDays: widget.onGenerateDays,
       style: widget.style,
       headerDateFormat: widget.headerDateFormat,
       locale: widget.locale,
