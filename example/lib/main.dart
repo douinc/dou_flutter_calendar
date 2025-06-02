@@ -144,42 +144,24 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                 Text(_multiSelect ? '다중 선택' : '단일 선택'),
               ],
             ),
-          if (_selectedViewType == CalendarViewType.singleLine)
-            SingleLineCalendar(
-              viewType: _selectedViewType,
-              initialDate: _selectedDate,
-              initialSelectedDates: _selectedDates,
-              onDateSelected: (date) {
-                setState(() {
-                  _selectedDate = date;
-                });
-              },
-              onGenerateDays: _generateDays,
-              style: const CalendarStyle(
-                selectionColor: Colors.blue,
-                dateTextStyle: TextStyle(fontSize: 16),
-                weekdayTextStyle: TextStyle(fontSize: 12),
-              ),
-              headerDateFormat: 'MM월',
-            )
-          else
-            Calendar(
-              initialDate: _selectedDate,
-              initialSelectedDates: _selectedDates,
-              multiSelect: _multiSelect,
-              onDateSelected: (date) {
-                setState(() {
-                  _selectedDate = date;
-                });
-              },
-              onDatesSelected: (dates) {
-                setState(() {
-                  _selectedDates = dates;
-                });
-              },
-              onGenerateDays: _generateDays,
-              headerDateFormat: 'MM월',
-            ),
+          Calendar(
+            viewType: _selectedViewType,
+            initialDate: _selectedDate,
+            initialSelectedDates: _selectedDates,
+            multiSelect: _multiSelect,
+            onDateSelected: (date) {
+              setState(() {
+                _selectedDate = date;
+              });
+            },
+            onDatesSelected: (dates) {
+              setState(() {
+                _selectedDates = dates;
+              });
+            },
+            onGenerateDays: _generateDays,
+            headerDateFormat: 'MM월',
+          ),
           Column(
             children: [
               const SizedBox(height: 20),
