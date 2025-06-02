@@ -13,6 +13,16 @@ and the Flutter guide for
 
 # Dou Flutter Calendar
 
+[![pub package](https://img.shields.io/pub/v/dou_flutter_calendar.svg)](https://pub.dev/packages/dou_flutter_calendar)
+[![Flutter Version](https://img.shields.io/badge/Flutter-3.32.1-blue)](https://flutter.dev)
+[![Dart Version](https://img.shields.io/badge/Dart-3.8.0-blue)](https://dart.dev)
+[![Test Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)](https://github.com/douinc/dou_flutter_calendar/actions)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/douinc/dou_flutter_calendar/pulls)
+[![GitHub issues](https://img.shields.io/github/issues/douinc/dou_flutter_calendar?cache=1)](https://github.com/douinc/dou_flutter_calendar/issues)
+[![GitHub stars](https://img.shields.io/github/stars/douinc/dou_flutter_calendar?cache=1)](https://github.com/douinc/dou_flutter_calendar/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/douinc/dou_flutter_calendar?cache=1)](https://github.com/douinc/dou_flutter_calendar/network/members)
+
 A highly customizable and feature-rich calendar widget for Flutter applications. This package provides flexible calendar implementations with various views and customization options.
 
 ## Features

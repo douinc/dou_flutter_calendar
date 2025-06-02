@@ -1,0 +1,63 @@
+name: Test Coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Install lcov
+        run: sudo apt-get install -y lcov
+
+      - name: Generate coverage report
+        run: |
+          genhtml coverage/lcov.info -o coverage/html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/html
+          overwrite: true
+
+      - name: Generate coverage badge
+        run: |
+          COVERAGE=$(lcov --summary coverage/lcov.info | grep "lines......:" | cut -d ' ' -f 4 | cut -d '%' -f 1)
+          echo "{
+            \"schemaVersion\": 1,
+            \"label\": \"coverage\",
+            \"message\": \"$COVERAGE%\",
+            \"color\": \"green\"
+          }" > coverage/coverage.json
+
+      - name: Upload coverage badge
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-badge
+          path: coverage/badge.svg
+          overwrite: true
+
+      - name: Upload coverage json
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-json
+          path: coverage/coverage.json
+          overwrite: true
