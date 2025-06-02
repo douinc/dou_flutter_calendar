@@ -7,8 +7,8 @@ import 'calendar_month.dart';
 
 class Calendar extends StatefulWidget {
   final DateTime? initialDate;
-  final Function(DateTime)? onDateSelected;
-  final List<CalendarDate>? selectedDates;
+  final Function(List<CalendarDate>)? onDatesSelected;
+  final List<CalendarDate>? initialSelectedDates;
   final bool multiSelect;
   final List<CalendarDate>? days;
   final List<CalendarDate> Function(DateTime)? onGenerateDays;
@@ -18,8 +18,8 @@ class Calendar extends StatefulWidget {
   const Calendar({
     super.key,
     this.initialDate,
-    this.onDateSelected,
-    this.selectedDates,
+    this.onDatesSelected,
+    this.initialSelectedDates,
     this.multiSelect = false,
     this.days,
     this.onGenerateDays,
@@ -34,12 +34,25 @@ class Calendar extends StatefulWidget {
 class _CalendarState extends State<Calendar> {
   late DateTime _currentDate;
   late List<CalendarDate> _days;
+  late List<CalendarDate> _selectedDates;
 
   @override
   void initState() {
     super.initState();
     _currentDate = widget.initialDate ?? DateTime.now();
+    _selectedDates = widget.initialSelectedDates ?? [];
+    if (widget.initialDate != null && _selectedDates.isEmpty) {
+      _selectedDates = [CalendarDate(date: widget.initialDate!)];
+    }
     _updateDays();
+  }
+
+  @override
+  void didUpdateWidget(Calendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialSelectedDates != oldWidget.initialSelectedDates) {
+      _selectedDates = widget.initialSelectedDates ?? [];
+    }
   }
 
   void _updateDays() {
@@ -47,9 +60,6 @@ class _CalendarState extends State<Calendar> {
       _days = widget.days!;
     } else if (widget.onGenerateDays != null) {
       _days = widget.onGenerateDays!(_currentDate);
-      print(
-        'Generated days: ${_days.where((day) => day.dateLabel != null).length} days with label',
-      );
     } else {
       _days = CalendarUtils.getDaysInMonth(_currentDate);
     }
@@ -69,6 +79,22 @@ class _CalendarState extends State<Calendar> {
     });
   }
 
+  void _onDateSelected(DateTime date) {
+    setState(() {
+      final calendarDate = CalendarDate(date: date);
+      if (widget.multiSelect) {
+        if (_selectedDates.any((d) => d.date == date)) {
+          _selectedDates.removeWhere((d) => d.date == date);
+        } else {
+          _selectedDates.add(calendarDate);
+        }
+      } else {
+        _selectedDates = [calendarDate];
+      }
+      widget.onDatesSelected?.call(_selectedDates);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -82,8 +108,8 @@ class _CalendarState extends State<Calendar> {
         CalendarMonth(
           days: _days,
           currentMonth: _currentDate,
-          onDateSelected: widget.onDateSelected,
-          selectedDates: widget.selectedDates,
+          onDateSelected: _onDateSelected,
+          selectedDates: _selectedDates,
           multiSelect: widget.multiSelect,
           style: widget.style,
         ),

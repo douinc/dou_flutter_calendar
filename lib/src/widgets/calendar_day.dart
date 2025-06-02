@@ -20,6 +20,7 @@ class CalendarDay extends StatelessWidget {
   )?
   dateLabelBuilder;
   final DateTime currentMonth;
+  final bool isSelected;
 
   const CalendarDay({
     super.key,
@@ -29,11 +30,11 @@ class CalendarDay extends StatelessWidget {
     this.style,
     this.dateBuilder,
     this.dateLabelBuilder,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = date.isSelected;
     final isWeekend =
         date.date.weekday == DateTime.saturday ||
         date.date.weekday == DateTime.sunday;
@@ -44,9 +45,7 @@ class CalendarDay extends StatelessWidget {
       date.date.day.toString(),
       textAlign: TextAlign.center,
       style: (style?.dateTextStyle ?? const TextStyle()).copyWith(
-        color: isSelected
-            ? Colors.black
-            : !isCurrentMonth
+        color: !isCurrentMonth
             ? (style?.dateTextStyle?.color ?? Colors.black).withAlpha(
                 (255 * otherMonthOpacity).round(),
               )

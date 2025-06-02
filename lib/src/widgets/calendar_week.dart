@@ -28,20 +28,22 @@ class CalendarWeek extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: days.map((day) {
-          final selectedDate = selectedDates?.firstWhere(
-            (selected) =>
-                selected.date.year == day.date.year &&
-                selected.date.month == day.date.month &&
-                selected.date.day == day.date.day,
-            orElse: () => day,
-          );
+          final isSelected =
+              selectedDates?.any(
+                (selected) =>
+                    selected.date.year == day.date.year &&
+                    selected.date.month == day.date.month &&
+                    selected.date.day == day.date.day,
+              ) ??
+              false;
 
           return Expanded(
             child: CalendarDay(
-              date: selectedDate ?? day,
+              date: day,
               currentMonth: currentMonth,
               onDateSelected: onDateSelected,
               style: style,
+              isSelected: isSelected,
             ),
           );
         }).toList(),

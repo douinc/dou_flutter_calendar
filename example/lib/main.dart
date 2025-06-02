@@ -30,7 +30,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   DateTime? selectedDate;
-  final List<CalendarDate> _selectedDates = [];
+  List<CalendarDate> _selectedDates = [];
   bool _isInitialized = false;
 
   @override
@@ -39,15 +39,6 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!_isInitialized) {
       final now = DateTime.now();
       selectedDate = now;
-      final days = _generateDays(now);
-      final selected = days.firstWhere(
-        (d) =>
-            d.date.year == now.year &&
-            d.date.month == now.month &&
-            d.date.day == now.day,
-        orElse: () => CalendarDate(date: now, isSelected: true),
-      );
-      _selectedDates.add(selected.copyWith(isSelected: true));
       _isInitialized = true;
     }
   }
@@ -58,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (day.date.day == 15) {
         return day.copyWith(
           dateLabel: Text(
-            '급여일',
+            '1일',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontSize: 10,
@@ -116,24 +107,12 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Calendar(
               initialDate: DateTime.now(),
-              onDateSelected: (date) {
+              multiSelect: false,
+              onDatesSelected: (dates) {
                 setState(() {
-                  selectedDate = date;
-                  _selectedDates.clear();
-                  // 현재 월의 days를 생성
-                  final days = _generateDays(date);
-                  // 선택한 날짜의 CalendarDate를 찾음
-                  final selected = days.firstWhere(
-                    (d) =>
-                        d.date.year == date.year &&
-                        d.date.month == date.month &&
-                        d.date.day == date.day,
-                    orElse: () => CalendarDate(date: date, isSelected: true),
-                  );
-                  _selectedDates.add(selected.copyWith(isSelected: true));
+                  _selectedDates = dates;
                 });
               },
-              selectedDates: _selectedDates,
               onGenerateDays: _generateDays,
               headerDateFormat: 'MM월',
             ),
