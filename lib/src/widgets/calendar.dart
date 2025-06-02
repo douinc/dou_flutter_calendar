@@ -13,6 +13,7 @@ class Calendar extends StatefulWidget {
   final List<CalendarDate>? days;
   final List<CalendarDate> Function(DateTime)? onGenerateDays;
   final CalendarStyle? style;
+  final String? headerDateFormat;
 
   const Calendar({
     super.key,
@@ -23,6 +24,7 @@ class Calendar extends StatefulWidget {
     this.days,
     this.onGenerateDays,
     this.style,
+    this.headerDateFormat,
   });
 
   @override
@@ -75,6 +77,7 @@ class _CalendarState extends State<Calendar> {
           currentDate: _currentDate,
           onPreviousMonth: _onPreviousMonth,
           onNextMonth: _onNextMonth,
+          dateFormat: widget.headerDateFormat,
         ),
         CalendarMonth(
           days: _days,

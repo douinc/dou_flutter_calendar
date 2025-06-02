@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import '../utils/calendar_utils.dart';
+import 'package:intl/intl.dart';
 
 class CalendarHeader extends StatelessWidget {
   final DateTime currentDate;
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
+  final String? dateFormat;
 
   const CalendarHeader({
     super.key,
     required this.currentDate,
     required this.onPreviousMonth,
     required this.onNextMonth,
+    this.dateFormat,
   });
 
   @override
@@ -18,14 +21,16 @@ class CalendarHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
             onPressed: onPreviousMonth,
           ),
           Text(
-            CalendarUtils.getMonthName(currentDate),
+            dateFormat != null
+                ? DateFormat(dateFormat).format(currentDate)
+                : CalendarUtils.getMonthName(currentDate),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           IconButton(

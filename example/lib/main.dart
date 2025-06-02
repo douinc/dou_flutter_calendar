@@ -135,6 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               selectedDates: _selectedDates,
               onGenerateDays: _generateDays,
+              headerDateFormat: 'MM월',
             ),
             const SizedBox(height: 20),
             if (selectedDate != null)
