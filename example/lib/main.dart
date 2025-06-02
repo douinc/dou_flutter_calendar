@@ -182,6 +182,7 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
             ),
           Column(
             children: [
+              const SizedBox(height: 20),
               Text(
                 '선택된 날짜: ${_selectedDate.year}년 ${_selectedDate.month}월 ${_selectedDate.day}일',
                 style: const TextStyle(fontSize: 16),

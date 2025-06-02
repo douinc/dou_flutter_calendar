@@ -45,6 +45,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     _currentDate = widget.initialDate;
     _selectedDates = widget.initialSelectedDates ?? [];
     _initializeDates();
+
     if (_selectedDates.isEmpty) {
       _selectedDates = [CalendarDate(date: _currentDate)];
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -52,6 +53,14 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
         _scrollToSelectedDate();
       });
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelectedDate(animate: false);
+    });
   }
 
   void _initializeDates() {
@@ -116,7 +125,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     super.dispose();
   }
 
-  void _scrollToSelectedDate() {
+  void _scrollToSelectedDate({bool animate = true}) {
     if (_selectedDates.isEmpty) return;
 
     final selectedDate = _selectedDates.first.date;
@@ -135,11 +144,15 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       final maxOffset = (_days.length * itemWidth) - screenWidth;
       final clampedOffset = targetOffset.clamp(0.0, maxOffset);
 
-      _scrollController.animateTo(
-        clampedOffset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      if (animate) {
+        _scrollController.animateTo(
+          clampedOffset,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        _scrollController.jumpTo(clampedOffset);
+      }
     }
   }
 
@@ -166,42 +179,66 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
               _moveToNextDay();
             }
           },
-          child: SizedBox(
-            height: widget.height + 24,
-            child: ListView.builder(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _days.length,
-              itemBuilder: (context, dayIndex) {
-                final day = _days[dayIndex];
-                final weekday = day.date.weekday;
-                const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-                final isCurrentMonth = day.date.month == displayDate.month;
-
-                return Container(
-                  width: widget.itemWidth,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Column(
-                    children: [
-                      Text(
-                        weekdays[weekday - 1],
-                        style:
-                            (widget.style?.weekdayTextStyle ??
-                                    const TextStyle(fontSize: 12))
-                                .copyWith(
-                                  color:
-                                      (weekday == 7 ? Colors.red : Colors.grey)
-                                          .withAlpha(isCurrentMonth ? 255 : 51),
-                                ),
-                      ),
-                      const SizedBox(height: 4),
-                      _buildDayItem(day),
-                    ],
+          child: Column(
+            children: [
+              Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  Container(height: 1, color: Colors.grey[300]),
+                  CustomPaint(
+                    size: const Size(20, 10),
+                    painter: TrianglePainter(),
                   ),
-                );
-              },
-            ),
+                ],
+              ),
+              SizedBox(height: 10),
+              SingleChildScrollView(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                physics: const NeverScrollableScrollPhysics(),
+                child: Row(
+                  children: List.generate(_days.length, (dayIndex) {
+                    final day = _days[dayIndex];
+                    final weekday = day.date.weekday;
+                    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+
+                    return Container(
+                      width: widget.itemWidth,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: day.date.weekday == displayDate.weekday
+                                  ? Colors.black
+                                  : Colors.transparent,
+                            ),
+                            child: Text(
+                              weekdays[weekday - 1],
+                              style:
+                                  (widget.style?.weekdayTextStyle ??
+                                          const TextStyle(fontSize: 10))
+                                      .copyWith(
+                                        color:
+                                            day.date.weekday ==
+                                                displayDate.weekday
+                                            ? Colors.white
+                                            : Color(0xFF71717A),
+                                      ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          _buildDayItem(day),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -210,17 +247,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
   Widget _buildDayItem(CalendarDate calendarDate) {
     final date = calendarDate.date;
-    final isSelected = _selectedDates.any(
-      (selected) =>
-          selected.date.year == date.year &&
-          selected.date.month == date.month &&
-          selected.date.day == date.day,
-    );
-    final isDisabled = calendarDate.isDisabled;
-    final isCurrentMonth = date.month == _currentDate.month;
-
-    final style = widget.style ?? const CalendarStyle();
-    final selectionColor = style.selectionColor ?? Colors.blue;
 
     return GestureDetector(
       onTap: () {
@@ -234,7 +260,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
         width: widget.itemWidth * 0.7,
         height: widget.itemWidth * 0.7,
         decoration: BoxDecoration(
-          color: isSelected ? selectionColor : Colors.grey.withAlpha(26),
+          color: Colors.grey.withAlpha(26),
           shape: BoxShape.circle,
         ),
         child: Center(child: calendarDate.dateLabel),
@@ -256,7 +282,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       setState(() {
         _selectedDates = [_days[currentIndex + 1]];
         widget.onDateSelected?.call(_days[currentIndex + 1].date);
-        _scrollToSelectedDate();
+        _scrollToSelectedDate(animate: true);
       });
     }
   }
@@ -275,7 +301,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       setState(() {
         _selectedDates = [_days[currentIndex - 1]];
         widget.onDateSelected?.call(_days[currentIndex - 1].date);
-        _scrollToSelectedDate();
+        _scrollToSelectedDate(animate: true);
       });
     }
   }
@@ -293,4 +319,24 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       _initializeDates();
     });
   }
+}
+
+class TrianglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(size.width / 2, size.height)
+      ..lineTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
