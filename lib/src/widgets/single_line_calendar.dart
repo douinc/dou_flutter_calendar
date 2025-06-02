@@ -64,6 +64,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   void _initializeDates() {
+    // Generate dates for 3 months before and after the current date for smooth scrolling
     _startDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
     _endDate = DateTime(_currentDate.year, _currentDate.month + 1, 1);
     _days = _getDaysInRange(_startDate, _endDate);
@@ -73,37 +74,15 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     final days = <CalendarDate>[];
     var current = start;
 
-    while (current.isBefore(end)) {
-      final firstDayOfMonth = DateTime(current.year, current.month, 1);
-      final lastDayOfMonth = DateTime(current.year, current.month + 1, 0);
-
-      final firstWeekday = firstDayOfMonth.weekday;
-      // Add days from previous month
-      for (var i = firstWeekday - 1; i > 0; i--) {
-        final previousMonthDay = firstDayOfMonth.subtract(Duration(days: i));
-        days.add(CalendarDate(date: previousMonthDay));
-      }
-
-      // Add days of current month
-      for (var i = 1; i <= lastDayOfMonth.day; i++) {
-        final currentDate = DateTime(current.year, current.month, i);
-        days.add(CalendarDate(date: currentDate));
-      }
-
-      // Add days from next month
-      final remainingDays = 42 - (firstWeekday - 1 + lastDayOfMonth.day);
-      for (var i = 1; i <= remainingDays; i++) {
-        final nextMonthDay = lastDayOfMonth.add(Duration(days: i));
-        days.add(CalendarDate(date: nextMonthDay));
-      }
-
-      current = DateTime(current.year, current.month + 1, 1);
+    // Generate continuous dates from start to end
+    while (!current.isAfter(end)) {
+      days.add(CalendarDate(date: current));
+      current = current.add(const Duration(days: 1));
     }
 
     // Apply onGenerateDays if provided
     if (widget.onGenerateDays != null) {
       final generatedDays = widget.onGenerateDays!(_currentDate);
-      // Create a map of generated days for quick lookup
       final generatedDaysMap = {
         for (var day in generatedDays)
           '${day.date.year}-${day.date.month}-${day.date.day}': day,
@@ -147,7 +126,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       if (animate) {
         _scrollController.animateTo(
           clampedOffset,
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 100),
           curve: Curves.easeInOut,
         );
       } else {
@@ -278,6 +257,14 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
           day.date.day == _selectedDates.first.date.day,
     );
 
+    // Check if we need to generate more dates
+    if (currentIndex >= _days.length - 14) {
+      setState(() {
+        _endDate = DateTime(_endDate.year, _endDate.month + 1, 1);
+        _days = _getDaysInRange(_startDate, _endDate);
+      });
+    }
+
     if (currentIndex < _days.length - 1) {
       setState(() {
         _selectedDates = [_days[currentIndex + 1]];
@@ -296,6 +283,14 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
           day.date.month == _selectedDates.first.date.month &&
           day.date.day == _selectedDates.first.date.day,
     );
+
+    // Check if we need to generate more dates
+    if (currentIndex <= 14) {
+      setState(() {
+        _startDate = DateTime(_startDate.year, _startDate.month - 1, 1);
+        _days = _getDaysInRange(_startDate, _endDate);
+      });
+    }
 
     if (currentIndex > 0) {
       setState(() {
