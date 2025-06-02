@@ -21,6 +21,7 @@ class CalendarDay extends StatelessWidget {
   dateLabelBuilder;
   final DateTime currentMonth;
   final bool isSelected;
+  final Locale? locale;
 
   const CalendarDay({
     super.key,
@@ -31,6 +32,7 @@ class CalendarDay extends StatelessWidget {
     this.dateBuilder,
     this.dateLabelBuilder,
     this.isSelected = false,
+    this.locale,
   });
 
   @override

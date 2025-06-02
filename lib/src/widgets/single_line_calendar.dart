@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class SingleLineCalendar extends StatefulWidget {
   final CalendarViewType viewType;
@@ -12,6 +14,7 @@ class SingleLineCalendar extends StatefulWidget {
   final double itemWidth;
   final CalendarStyle? style;
   final String? headerDateFormat;
+  final Locale? locale;
 
   const SingleLineCalendar({
     super.key,
@@ -24,7 +27,8 @@ class SingleLineCalendar extends StatefulWidget {
     this.height = 60,
     this.itemWidth = 50,
     this.style,
-    this.headerDateFormat = 'MM월 dd일',
+    this.headerDateFormat,
+    this.locale,
   });
 
   @override
@@ -45,6 +49,10 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     _currentDate = widget.initialDate;
     _selectedDates = widget.initialSelectedDates ?? [];
     _initializeDates();
+
+    if (widget.locale != null) {
+      initializeDateFormatting(widget.locale!.languageCode);
+    }
 
     if (_selectedDates.isEmpty) {
       _selectedDates = [CalendarDate(date: _currentDate)];
@@ -144,11 +152,14 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     return Column(
       children: [
         CalendarHeader(
-          currentDate: displayDate,
+          currentDate: _currentDate,
+          selectedDate: displayDate,
           onPreviousMonth: _onPreviousMonth,
           onNextMonth: _onNextMonth,
-          dateFormat: 'MM월 dd일',
+          dateFormat: widget.headerDateFormat,
           showNavigation: false,
+          isSingleLine: true,
+          locale: widget.locale,
         ),
         GestureDetector(
           onHorizontalDragEnd: (details) {
@@ -179,7 +190,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
                   children: List.generate(_days.length, (dayIndex) {
                     final day = _days[dayIndex];
                     final weekday = day.date.weekday;
-                    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+                    final weekdays =
+                        DateFormat.EEEE().dateSymbols.STANDALONENARROWWEEKDAYS;
 
                     return Container(
                       width: widget.itemWidth,

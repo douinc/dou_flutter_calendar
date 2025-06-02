@@ -26,10 +26,18 @@ class CalendarExampleScreen extends StatefulWidget {
 }
 
 class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
-  CalendarViewType _selectedViewType = CalendarViewType.singleLine;
+  CalendarViewType _selectedViewType = CalendarViewType.grid;
   DateTime _selectedDate = DateTime.now();
   List<CalendarDate> _selectedDates = [];
   bool _multiSelect = false;
+  Locale _selectedLocale = const Locale('ko');
+
+  final List<Map<String, dynamic>> _locales = [
+    {'name': 'English', 'locale': const Locale('en')},
+    {'name': '한국어', 'locale': const Locale('ko')},
+    {'name': '日本語', 'locale': const Locale('ja')},
+    {'name': '中文', 'locale': const Locale('zh')},
+  ];
 
   List<CalendarDate> _generateDays(DateTime date) {
     final now = DateTime.now();
@@ -37,7 +45,7 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
       if (day.date.day == 2) {
         return day.copyWith(
           dateLabel: Text(
-            '1건',
+            '1 item',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontSize: 10,
@@ -51,7 +59,7 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
       if (day.date.weekday == DateTime.monday) {
         return day.copyWith(
           dateLabel: Text(
-            '회의',
+            'Meeting',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontSize: 10,
@@ -67,7 +75,7 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
           day.date.day == now.day) {
         return day.copyWith(
           dateLabel: Text(
-            '오늘',
+            'Today',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontSize: 10,
@@ -90,6 +98,22 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
       ),
       body: Column(
         children: [
+          DropdownButton<Locale>(
+            value: _selectedLocale,
+            items: _locales
+                .map((locale) => DropdownMenuItem<Locale>(
+                      value: locale['locale'] as Locale,
+                      child: Text(locale['name'] as String),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _selectedLocale = value;
+                });
+              }
+            },
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -106,7 +130,7 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                           : Colors.grey,
                 ),
                 child: const Text(
-                  '한 줄 캘린더',
+                  'Single Line Calendar',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -122,7 +146,7 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                       : Colors.grey,
                 ),
                 child: const Text(
-                  '그리드 캘린더',
+                  'Grid Calendar',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -141,10 +165,11 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                     });
                   },
                 ),
-                Text(_multiSelect ? '다중 선택' : '단일 선택'),
+                Text(_multiSelect ? 'Multi Select' : 'Single Select'),
               ],
             ),
           Calendar(
+            locale: _selectedLocale,
             viewType: _selectedViewType,
             initialDate: _selectedDate,
             initialSelectedDates: _selectedDates,
@@ -159,19 +184,18 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
                 _selectedDates = dates;
               });
             },
-            onGenerateDays: _generateDays,
-            headerDateFormat: 'MM월',
+            // headerDateFormat: 'yyyy MM',
           ),
           Column(
             children: [
               const SizedBox(height: 20),
               Text(
-                '선택된 날짜: ${_selectedDate.year}년 ${_selectedDate.month}월 ${_selectedDate.day}일',
+                'Selected Date: ${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
                 style: const TextStyle(fontSize: 16),
               ),
               if (_multiSelect && _selectedDates.isNotEmpty)
                 Text(
-                  '선택된 날짜들: ${_selectedDates.map((d) => '${d.date.month}/${d.date.day}').join(', ')}',
+                  'Selected Dates: ${_selectedDates.map((d) => '${d.date.month}/${d.date.day}').join(', ')}',
                   style: const TextStyle(fontSize: 16),
                 ),
             ],

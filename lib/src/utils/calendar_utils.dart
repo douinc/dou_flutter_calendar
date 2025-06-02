@@ -1,4 +1,6 @@
 import '../models/calendar_date.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class CalendarUtils {
   static List<CalendarDate> getDaysInMonth(DateTime date) {
@@ -41,11 +43,17 @@ class CalendarUtils {
         date.day == now.day;
   }
 
-  static String getMonthName(DateTime date) {
-    return '${date.year}년 ${date.month}월';
+  static String getMonthName(DateTime date, [String? locale]) {
+    if (locale != null) {
+      initializeDateFormatting(locale);
+    }
+    return DateFormat.yMMMM(locale).format(date);
   }
 
-  static List<String> getWeekdayNames() {
-    return ['일', '월', '화', '수', '목', '금', '토'];
+  static List<String> getWeekdayNames([String? locale]) {
+    if (locale != null) {
+      initializeDateFormatting(locale);
+    }
+    return DateFormat.EEEE(locale).dateSymbols.STANDALONENARROWWEEKDAYS;
   }
 }

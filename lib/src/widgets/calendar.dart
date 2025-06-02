@@ -3,6 +3,8 @@ import '../models/calendar_date.dart';
 import '../models/calendar_style.dart';
 import 'single_line_calendar.dart';
 import 'grid_calendar.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class Calendar extends StatefulWidget {
   final DateTime? initialDate;
@@ -15,6 +17,7 @@ class Calendar extends StatefulWidget {
   final CalendarStyle? style;
   final String? headerDateFormat;
   final CalendarViewType viewType;
+  final Locale? locale;
 
   const Calendar({
     super.key,
@@ -28,6 +31,7 @@ class Calendar extends StatefulWidget {
     this.style,
     this.headerDateFormat,
     this.viewType = CalendarViewType.grid,
+    this.locale,
   });
 
   @override
@@ -35,6 +39,14 @@ class Calendar extends StatefulWidget {
 }
 
 class _CalendarState extends State<Calendar> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.locale != null) {
+      initializeDateFormatting(widget.locale!.languageCode);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.viewType == CalendarViewType.singleLine) {
@@ -46,6 +58,7 @@ class _CalendarState extends State<Calendar> {
         onGenerateDays: widget.onGenerateDays,
         style: widget.style,
         headerDateFormat: widget.headerDateFormat,
+        locale: widget.locale,
       );
     }
 
@@ -59,6 +72,7 @@ class _CalendarState extends State<Calendar> {
       onGenerateDays: widget.onGenerateDays,
       style: widget.style,
       headerDateFormat: widget.headerDateFormat,
+      locale: widget.locale,
     );
   }
 }
