@@ -34,10 +34,10 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
   List<CalendarDate> _generateDays(DateTime date) {
     final now = DateTime.now();
     return CalendarUtils.getDaysInMonth(date).map((day) {
-      if (day.date.day == 15) {
+      if (day.date.day == 2) {
         return day.copyWith(
           dateLabel: Text(
-            '1일',
+            '1건',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontSize: 10,

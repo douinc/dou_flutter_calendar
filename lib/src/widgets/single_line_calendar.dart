@@ -61,6 +61,10 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   List<CalendarDate> _getDaysInRange(DateTime start, DateTime end) {
+    if (widget.onGenerateDays != null) {
+      return widget.onGenerateDays!(_currentDate);
+    }
+
     final days = <CalendarDate>[];
     var current = start;
 
@@ -202,7 +206,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
     final style = widget.style ?? const CalendarStyle();
     final selectionColor = style.selectionColor ?? Colors.blue;
-    final otherMonthOpacity = style.otherMonthOpacity ?? 0.2;
 
     return GestureDetector(
       onTap: () {
@@ -219,21 +222,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
           color: isSelected ? selectionColor : Colors.grey.withAlpha(26),
           shape: BoxShape.circle,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (calendarDate.dateLabel != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Opacity(
-                  opacity: isDisabled || !isCurrentMonth
-                      ? otherMonthOpacity
-                      : 1.0,
-                  child: calendarDate.dateLabel!,
-                ),
-              ),
-          ],
-        ),
+        child: Center(child: calendarDate.dateLabel),
       ),
     );
   }
