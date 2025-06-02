@@ -61,10 +61,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   List<CalendarDate> _getDaysInRange(DateTime start, DateTime end) {
-    if (widget.onGenerateDays != null) {
-      return widget.onGenerateDays!(_currentDate);
-    }
-
     final days = <CalendarDate>[];
     var current = start;
 
@@ -73,16 +69,19 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       final lastDayOfMonth = DateTime(current.year, current.month + 1, 0);
 
       final firstWeekday = firstDayOfMonth.weekday;
+      // Add days from previous month
       for (var i = firstWeekday - 1; i > 0; i--) {
         final previousMonthDay = firstDayOfMonth.subtract(Duration(days: i));
         days.add(CalendarDate(date: previousMonthDay));
       }
 
+      // Add days of current month
       for (var i = 1; i <= lastDayOfMonth.day; i++) {
         final currentDate = DateTime(current.year, current.month, i);
         days.add(CalendarDate(date: currentDate));
       }
 
+      // Add days from next month
       final remainingDays = 42 - (firstWeekday - 1 + lastDayOfMonth.day);
       for (var i = 1; i <= remainingDays; i++) {
         final nextMonthDay = lastDayOfMonth.add(Duration(days: i));
@@ -90,6 +89,22 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       }
 
       current = DateTime(current.year, current.month + 1, 1);
+    }
+
+    // Apply onGenerateDays if provided
+    if (widget.onGenerateDays != null) {
+      final generatedDays = widget.onGenerateDays!(_currentDate);
+      // Create a map of generated days for quick lookup
+      final generatedDaysMap = {
+        for (var day in generatedDays)
+          '${day.date.year}-${day.date.month}-${day.date.day}': day,
+      };
+
+      // Update days with generated data where available
+      return days.map((day) {
+        final key = '${day.date.year}-${day.date.month}-${day.date.day}';
+        return generatedDaysMap[key] ?? day;
+      }).toList();
     }
 
     return days;
