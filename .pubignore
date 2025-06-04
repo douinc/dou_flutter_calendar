@@ -1,2 +1,9 @@
-.env*
 docs/
+build/
+
+github/
+.idea/
+.vscode/
+.dart_tool/
+
+.env*
