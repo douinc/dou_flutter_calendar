@@ -27,7 +27,7 @@ A highly customizable and feature-rich calendar widget for Flutter applications.
 
 ## Demo
 
-![Calendar Demo](docs/calendar_demo.gif)
+![Calendar Demo](https://github.com/douinc/dou_flutter_calendar/blob/main/docs/calendar_demo.gif?raw=true)
 
 
 ## Features
