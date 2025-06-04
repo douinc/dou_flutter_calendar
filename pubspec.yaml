@@ -1,6 +1,6 @@
 name: dou_flutter_calendar
 description: A customizable and feature-rich calendar widget for Flutter applications. Provides flexible calendar implementation with various views and customization options.
-version: 0.0.1
+version: 0.0.2
 homepage: https://dou.so
 repository: https://github.com/douinc/dou_flutter_calendar
 issue_tracker: https://github.com/douinc/dou_flutter_calendar/issues
