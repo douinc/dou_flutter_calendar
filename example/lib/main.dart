@@ -123,8 +123,9 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
             ),
           Padding(
             padding: EdgeInsets.symmetric(
-                horizontal:
-                    _selectedViewType == CalendarViewType.grid ? 16 : 0),
+              horizontal: _selectedViewType == CalendarViewType.grid ? 16 : 0,
+              vertical: _selectedViewType == CalendarViewType.grid ? 0 : 15,
+            ),
             child: Calendar(
               locale: _selectedLocale,
               viewType: _selectedViewType,

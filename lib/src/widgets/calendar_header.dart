@@ -5,8 +5,8 @@ import 'package:intl/date_symbol_data_local.dart';
 class CalendarHeader extends StatelessWidget {
   final DateTime currentDate;
   final DateTime? selectedDate;
-  final VoidCallback onPreviousMonth;
-  final VoidCallback onNextMonth;
+  final VoidCallback? onPreviousMonth;
+  final VoidCallback? onNextMonth;
   final String? dateFormat;
   final bool showNavigation;
   final bool isSingleLine;
@@ -16,8 +16,8 @@ class CalendarHeader extends StatelessWidget {
     super.key,
     required this.currentDate,
     this.selectedDate,
-    required this.onPreviousMonth,
-    required this.onNextMonth,
+    this.onPreviousMonth,
+    this.onNextMonth,
     this.dateFormat,
     this.showNavigation = true,
     this.isSingleLine = false,
@@ -62,7 +62,7 @@ class CalendarHeader extends StatelessWidget {
         : '';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      padding: const EdgeInsets.only(bottom: 15.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
