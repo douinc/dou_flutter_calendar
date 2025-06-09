@@ -17,7 +17,7 @@ class CalendarUtils {
       final previousMonthDay = firstDayOfMonth.subtract(
         Duration(days: firstWeekday - i),
       );
-      days.add(CalendarDate(date: previousMonthDay, isDisabled: true));
+      days.add(CalendarDate(date: previousMonthDay));
     }
 
     // Add all days of the current month
@@ -30,7 +30,7 @@ class CalendarUtils {
     final remainingDays = 42 - days.length; // 6 rows * 7 days
     for (var i = 1; i <= remainingDays; i++) {
       final nextMonthDay = lastDayOfMonth.add(Duration(days: i));
-      days.add(CalendarDate(date: nextMonthDay, isDisabled: true));
+      days.add(CalendarDate(date: nextMonthDay));
     }
 
     return days;

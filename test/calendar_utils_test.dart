@@ -12,14 +12,12 @@ void main() {
       final days = CalendarUtils.getDaysInMonth(DateTime(2024, 3, 1));
       final firstDay = days.first;
       expect(firstDay.date.month, 2); // February
-      expect(firstDay.isDisabled, true);
     });
 
     test('getDaysInMonth includes next month days', () {
       final days = CalendarUtils.getDaysInMonth(DateTime(2024, 3, 1));
       final lastDay = days.last;
       expect(lastDay.date.month, 4); // April
-      expect(lastDay.isDisabled, true);
     });
 
     test('getDaysInMonth marks today correctly', () {

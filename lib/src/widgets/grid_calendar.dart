@@ -16,8 +16,7 @@ class GridCalendar extends StatefulWidget {
   final CalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
-  final Widget Function(CalendarDate calendarDate, bool isSelected)?
-  dayItemBuilder;
+  final Widget Function(CalendarDate calendarDate)? dayItemBuilder;
 
   const GridCalendar({
     super.key,
@@ -93,7 +92,7 @@ class _GridCalendarState extends State<GridCalendar> {
 
   void _onDateSelected(DateTime date) {
     setState(() {
-      final calendarDate = CalendarDate(date: date);
+      final calendarDate = CalendarDate(date: date, isSelected: true);
       if (widget.multiSelect) {
         if (_selectedDates.any((d) => d.date == date)) {
           _selectedDates.removeWhere((d) => d.date == date);

@@ -9,8 +9,7 @@ class CalendarDay extends StatelessWidget {
   final DateTime currentMonth;
   final bool isSelected;
   final Locale? locale;
-  final Widget Function(CalendarDate calendarDate, bool isSelected)?
-  dayItemBuilder;
+  final Widget Function(CalendarDate calendarDate)? dayItemBuilder;
 
   const CalendarDay({
     super.key,
@@ -31,7 +30,7 @@ class CalendarDay extends StatelessWidget {
     return GestureDetector(
       onTap: () => onDateSelected?.call(date.date),
       child: dayItemBuilder != null
-          ? dayItemBuilder!(date, isSelected)
+          ? dayItemBuilder!(date)
           : Container(
               height: style?.cellHeight ?? 60,
               padding: EdgeInsets.all(style?.cellPadding ?? 4),

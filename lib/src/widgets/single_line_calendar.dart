@@ -45,8 +45,7 @@ class SingleLineCalendar extends StatefulWidget {
   final CalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
-  final Widget Function(CalendarDate calendarDate, bool isSelected)?
-  dayItemBuilder;
+  final Widget Function(CalendarDate calendarDate)? dayItemBuilder;
 
   const SingleLineCalendar({
     super.key,
@@ -116,8 +115,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   void _initializeSelectedDate() {
     final initialDates = widget.initialSelectedDates ?? [];
     _selectedDate = initialDates.isNotEmpty
-        ? initialDates.first
-        : CalendarDate(date: _currentDate);
+        ? initialDates.first.copyWith(isSelected: true)
+        : CalendarDate(date: _currentDate, isSelected: true);
   }
 
   void _initializeDateRange() {
@@ -206,7 +205,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     var current = start;
 
     while (!current.isAfter(end)) {
-      days.add(CalendarDate(date: current));
+      final isSelected = _isSameDate(current, _selectedDate.date);
+      days.add(CalendarDate(date: current, isSelected: isSelected));
       current = current.add(const Duration(days: 1));
     }
 
@@ -280,7 +280,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
     setState(() {
       _currentPageIndex = index;
-      _selectedDate = CalendarDate(date: targetDate);
+      _selectedDate = CalendarDate(date: targetDate, isSelected: true);
+      _updateDaysSelection(index);
       _isScrolling = true;
     });
 
@@ -309,7 +310,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
     setState(() {
       _currentPageIndex = index;
-      _selectedDate = _days[index];
+      _selectedDate = _days[index].copyWith(isSelected: true);
+      // Update all days with new selection state
+      _updateDaysSelection(index);
     });
 
     if (!_isScrolling && mounted) {
@@ -317,6 +320,12 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     }
 
     _checkAndLoadMoreDates(index);
+  }
+
+  void _updateDaysSelection(int selectedIndex) {
+    for (int i = 0; i < _days.length; i++) {
+      _days[i] = _days[i].copyWith(isSelected: i == selectedIndex);
+    }
   }
 
   void _checkAndLoadMoreDates(int index) {
@@ -453,7 +462,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
         children: [
           _buildWeekdayLabel(day.date, isSelected),
           const SizedBox(height: _CalendarConstants.itemSpacing),
-          Flexible(child: _buildDayItem(day, isSelected)),
+          Flexible(child: _buildDayItem(day)),
         ],
       ),
     );
@@ -492,15 +501,15 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     );
   }
 
-  Widget _buildDayItem(CalendarDate calendarDate, bool isSelected) {
+  Widget _buildDayItem(CalendarDate calendarDate) {
     if (widget.dayItemBuilder != null) {
       return GestureDetector(
         onTap: () => _onDateTap(calendarDate),
-        child: widget.dayItemBuilder!(calendarDate, isSelected),
+        child: widget.dayItemBuilder!(calendarDate),
       );
     }
 
-    return _buildDefaultDayItem(calendarDate, isSelected);
+    return _buildDefaultDayItem(calendarDate, calendarDate.isSelected);
   }
 
   Widget _buildDefaultDayItem(CalendarDate calendarDate, bool isSelected) {

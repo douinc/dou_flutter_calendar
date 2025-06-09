@@ -11,8 +11,7 @@ class CalendarWeek extends StatelessWidget {
   final CalendarStyle? style;
   final DateTime currentMonth;
   final Locale? locale;
-  final Widget Function(CalendarDate calendarDate, bool isSelected)?
-  dayItemBuilder;
+  final Widget Function(CalendarDate calendarDate)? dayItemBuilder;
 
   const CalendarWeek({
     super.key,

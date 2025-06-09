@@ -10,7 +10,6 @@ void main() {
       expect(calendarDate.date, date);
       expect(calendarDate.isSelected, false);
       expect(calendarDate.isToday, false);
-      expect(calendarDate.isDisabled, false);
     });
 
     test('creates with custom values', () {
@@ -19,13 +18,11 @@ void main() {
         date: date,
         isSelected: true,
         isToday: true,
-        isDisabled: true,
       );
 
       expect(calendarDate.date, date);
       expect(calendarDate.isSelected, true);
       expect(calendarDate.isToday, true);
-      expect(calendarDate.isDisabled, true);
     });
 
     test('copyWith creates new instance with updated values', () {
@@ -33,7 +30,6 @@ void main() {
         date: DateTime(2024, 3, 1),
         isSelected: false,
         isToday: false,
-        isDisabled: false,
       );
 
       final updated = original.copyWith(isSelected: true, isToday: true);
@@ -41,7 +37,6 @@ void main() {
       expect(updated.date, original.date);
       expect(updated.isSelected, true);
       expect(updated.isToday, true);
-      expect(updated.isDisabled, original.isDisabled);
     });
 
     test('copyWith keeps original values when not specified', () {
@@ -49,7 +44,6 @@ void main() {
         date: DateTime(2024, 3, 1),
         isSelected: true,
         isToday: true,
-        isDisabled: true,
       );
 
       final updated = original.copyWith(date: DateTime(2024, 3, 2));
@@ -57,7 +51,6 @@ void main() {
       expect(updated.date, DateTime(2024, 3, 2));
       expect(updated.isSelected, original.isSelected);
       expect(updated.isToday, original.isToday);
-      expect(updated.isDisabled, original.isDisabled);
     });
   });
 }
