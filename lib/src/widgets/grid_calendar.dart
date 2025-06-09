@@ -239,6 +239,7 @@ class _GridCalendarState extends State<GridCalendar> {
       dateText: dateText,
       onPrevious: _onPreviousMonth,
       onNext: _onNextMonth,
+      showNavigationButtons: widget.style?.showNavigationButtons ?? true,
     );
   }
 }

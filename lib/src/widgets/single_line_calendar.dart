@@ -760,6 +760,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
       dateText: fullDateText,
       onPrevious: _onPreviousDay,
       onNext: _onNextDay,
+      showNavigationButtons: widget.style?.showNavigationButtons ?? true,
     );
   }
 

@@ -11,6 +11,7 @@ class GridCalendarStyle {
   final double? cellBorderWidth;
   final double? rowSpacing;
   final double? otherMonthOpacity;
+  final bool? showNavigationButtons;
 
   const GridCalendarStyle({
     this.selectionColor,
@@ -23,6 +24,7 @@ class GridCalendarStyle {
     this.cellBorderWidth,
     this.rowSpacing,
     this.otherMonthOpacity,
+    this.showNavigationButtons,
   });
 
   GridCalendarStyle copyWith({
@@ -36,6 +38,7 @@ class GridCalendarStyle {
     double? cellBorderWidth,
     double? rowSpacing,
     double? otherMonthOpacity,
+    bool? showNavigationButtons,
   }) {
     return GridCalendarStyle(
       selectionColor: selectionColor ?? this.selectionColor,
@@ -48,6 +51,8 @@ class GridCalendarStyle {
       cellBorderWidth: cellBorderWidth ?? this.cellBorderWidth,
       rowSpacing: rowSpacing ?? this.rowSpacing,
       otherMonthOpacity: otherMonthOpacity ?? this.otherMonthOpacity,
+      showNavigationButtons:
+          showNavigationButtons ?? this.showNavigationButtons,
     );
   }
 }
@@ -55,16 +60,24 @@ class GridCalendarStyle {
 class SingleLineCalendarStyle {
   final TextStyle? weekdayTextStyle;
   final double? dateSpacing;
+  final bool? showNavigationButtons;
 
-  const SingleLineCalendarStyle({this.weekdayTextStyle, this.dateSpacing});
+  const SingleLineCalendarStyle({
+    this.weekdayTextStyle,
+    this.dateSpacing,
+    this.showNavigationButtons,
+  });
 
   SingleLineCalendarStyle copyWith({
     TextStyle? weekdayTextStyle,
     double? dateSpacing,
+    bool? showNavigationButtons,
   }) {
     return SingleLineCalendarStyle(
       weekdayTextStyle: weekdayTextStyle ?? this.weekdayTextStyle,
       dateSpacing: dateSpacing ?? this.dateSpacing,
+      showNavigationButtons:
+          showNavigationButtons ?? this.showNavigationButtons,
     );
   }
 }
