@@ -46,7 +46,7 @@ class SingleLineCalendar extends StatefulWidget {
   final SingleLineCalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
-  final Widget Function(CalendarDate calendarDate)? dayItemBuilder;
+  final Widget Function(CalendarDate calendarDate)? dayBuilder;
 
   const SingleLineCalendar({
     super.key,
@@ -59,7 +59,7 @@ class SingleLineCalendar extends StatefulWidget {
     this.style,
     this.headerDateFormat,
     this.locale,
-    this.dayItemBuilder,
+    this.dayBuilder,
   });
 
   @override
@@ -767,10 +767,10 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   Widget _buildDayItem(CalendarDate calendarDate) {
-    if (widget.dayItemBuilder != null) {
+    if (widget.dayBuilder != null) {
       return GestureDetector(
         onTap: () => _onDateTap(calendarDate),
-        child: widget.dayItemBuilder!(calendarDate),
+        child: widget.dayBuilder!(calendarDate),
       );
     }
 

@@ -16,7 +16,7 @@ class GridCalendar extends StatefulWidget {
   final GridCalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
-  final Widget Function(CalendarDate calendarDate)? dayItemBuilder;
+  final Widget Function(CalendarDate calendarDate)? dayBuilder;
 
   const GridCalendar({
     super.key,
@@ -29,7 +29,7 @@ class GridCalendar extends StatefulWidget {
     this.style,
     this.headerDateFormat,
     this.locale,
-    this.dayItemBuilder,
+    this.dayBuilder,
   });
 
   @override
@@ -126,7 +126,7 @@ class _GridCalendarState extends State<GridCalendar> {
           multiSelect: widget.multiSelect,
           style: widget.style,
           locale: widget.locale,
-          dayItemBuilder: widget.dayItemBuilder,
+          dayItemBuilder: widget.dayBuilder,
         ),
       ],
     );

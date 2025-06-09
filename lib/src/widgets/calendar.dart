@@ -67,7 +67,7 @@ class _CalendarState extends State<Calendar> {
         style: widget.singleLineStyle,
         headerDateFormat: widget.headerDateFormat,
         locale: widget.locale,
-        dayItemBuilder: widget.dayBuilder,
+        dayBuilder: widget.dayBuilder,
       );
     }
 
@@ -81,7 +81,7 @@ class _CalendarState extends State<Calendar> {
       style: widget.gridStyle ?? widget.style,
       headerDateFormat: widget.headerDateFormat,
       locale: widget.locale,
-      dayItemBuilder: widget.dayBuilder,
+      dayBuilder: widget.dayBuilder,
     );
   }
 }
