@@ -4,6 +4,7 @@ import '../models/calendar_style.dart';
 import '../utils/calendar_utils.dart';
 import 'calendar_header.dart';
 import 'calendar_month.dart';
+import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class GridCalendar extends StatefulWidget {
@@ -17,6 +18,7 @@ class GridCalendar extends StatefulWidget {
   final String? headerDateFormat;
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
+  final Widget Function(String dateText)? headerBuilder;
 
   const GridCalendar({
     super.key,
@@ -30,6 +32,7 @@ class GridCalendar extends StatefulWidget {
     this.headerDateFormat,
     this.locale,
     this.dayBuilder,
+    this.headerBuilder,
   });
 
   @override
@@ -111,13 +114,7 @@ class _GridCalendarState extends State<GridCalendar> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CalendarHeader(
-          currentDate: _currentDate,
-          onPreviousMonth: _onPreviousMonth,
-          onNextMonth: _onNextMonth,
-          dateFormat: widget.headerDateFormat,
-          locale: widget.locale,
-        ),
+        _buildHeader(),
         CalendarMonth(
           days: _days,
           currentMonth: _currentDate,
@@ -129,6 +126,25 @@ class _GridCalendarState extends State<GridCalendar> {
           dayItemBuilder: widget.dayBuilder,
         ),
       ],
+    );
+  }
+
+  Widget _buildHeader() {
+    // Generate dateText with common logic
+    final dateFormatter = widget.headerDateFormat != null
+        ? DateFormat(widget.headerDateFormat, widget.locale?.languageCode)
+        : DateFormat.yMMMM(widget.locale?.languageCode);
+
+    final dateText = dateFormatter.format(_currentDate);
+
+    if (widget.headerBuilder != null) {
+      return widget.headerBuilder!(dateText);
+    }
+
+    return CalendarHeader(
+      dateText: dateText,
+      onPreviousMonth: _onPreviousMonth,
+      onNextMonth: _onNextMonth,
     );
   }
 }

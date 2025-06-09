@@ -47,6 +47,7 @@ class SingleLineCalendar extends StatefulWidget {
   final String? headerDateFormat;
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
+  final Widget Function(String dateText)? headerBuilder;
 
   const SingleLineCalendar({
     super.key,
@@ -60,6 +61,7 @@ class SingleLineCalendar extends StatefulWidget {
     this.headerDateFormat,
     this.locale,
     this.dayBuilder,
+    this.headerBuilder,
   });
 
   @override
@@ -634,14 +636,64 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   Widget _buildHeader(DateTime displayDate) {
-    return CalendarHeader(
-      currentDate: _currentDate,
-      selectedDate: displayDate,
-      dateFormat: widget.headerDateFormat,
-      showNavigation: false,
-      isSingleLine: true,
-      locale: widget.locale,
-    );
+    // Generate dateText with common logic
+    final dateFormatter = widget.headerDateFormat != null
+        ? DateFormat(widget.headerDateFormat, widget.locale?.languageCode)
+        : DateFormat.MMMd(widget.locale?.languageCode);
+
+    final dateText = dateFormatter.format(displayDate);
+    String additionalText = '';
+
+    if (widget.headerDateFormat == null) {
+      if (_isToday(displayDate) && _getTodayText() != null) {
+        additionalText = '${_getTodayText()}';
+      } else if (_isYesterday(displayDate) && _getYesterdayText() != null) {
+        additionalText = '${_getYesterdayText()}';
+      }
+    }
+
+    final fullDateText = dateText + additionalText;
+
+    if (widget.headerBuilder != null) {
+      return widget.headerBuilder!(fullDateText);
+    }
+
+    return CalendarHeader(dateText: fullDateText);
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
+
+  bool _isYesterday(DateTime date) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    return date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day;
+  }
+
+  String? _getTodayText() {
+    const translations = {
+      'en': '(Today)',
+      'ko': '(오늘)',
+      'ja': '(今日)',
+      'zh': '(今天)',
+    };
+    return translations[widget.locale?.languageCode];
+  }
+
+  String? _getYesterdayText() {
+    const translations = {
+      'en': '(Yesterday)',
+      'ko': '(어제)',
+      'ja': '(昨日)',
+      'zh': '(昨天)',
+    };
+    return translations[widget.locale?.languageCode];
   }
 
   Widget _buildCalendarBody() {
