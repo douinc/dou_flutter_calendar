@@ -83,7 +83,7 @@ class _CalendarControllerExampleState extends State<CalendarControllerExample> {
                   child: const Text('크리스마스로'),
                 ),
                 ElevatedButton(
-                  onPressed: () => _calendarController.changeDate(
+                  onPressed: () => _calendarController.selectDate(
                     DateTime.now().add(const Duration(days: 7)),
                   ),
                   child: const Text('일주일 후'),

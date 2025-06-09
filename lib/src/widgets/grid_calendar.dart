@@ -78,11 +78,41 @@ class _GridCalendarState extends State<GridCalendar> {
 
   void _onControllerChanged() {
     if (widget.controller != null) {
+      final newDate = widget.controller!.currentDate;
+      final isSelection =
+          widget.controller!.lastChangeType == CalendarChangeType.selection;
+
       setState(() {
-        _currentDate = widget.controller!.currentDate;
+        // Always update current date and days for both navigation and selection
+        _currentDate = newDate;
         _updateDays();
+
+        // Update selected dates only when it's a selection change
+        if (isSelection) {
+          final calendarDate = CalendarDate(date: newDate, isSelected: true);
+          if (widget.multiSelect) {
+            // For multi-select, add the date if not already selected
+            if (!_selectedDates.any((d) => _isSameDate(d.date, newDate))) {
+              _selectedDates.add(calendarDate);
+            }
+          } else {
+            _selectedDates = [calendarDate];
+          }
+        }
       });
+
+      // Call callbacks only for selection changes
+      if (isSelection) {
+        widget.onDateSelected?.call(newDate);
+        widget.onDatesSelected?.call(_selectedDates);
+      }
     }
+  }
+
+  bool _isSameDate(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   @override
@@ -114,9 +144,9 @@ class _GridCalendarState extends State<GridCalendar> {
   }
 
   void _onPreviousMonth() {
-    final newDate = DateTime(_currentDate.year, _currentDate.month - 1);
+    final newDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
     if (widget.controller != null) {
-      widget.controller!.changeDate(newDate);
+      widget.controller!.navigateToDate(newDate);
     } else {
       setState(() {
         _currentDate = newDate;
@@ -126,9 +156,9 @@ class _GridCalendarState extends State<GridCalendar> {
   }
 
   void _onNextMonth() {
-    final newDate = DateTime(_currentDate.year, _currentDate.month + 1);
+    final newDate = DateTime(_currentDate.year, _currentDate.month + 1, 1);
     if (widget.controller != null) {
-      widget.controller!.changeDate(newDate);
+      widget.controller!.navigateToDate(newDate);
     } else {
       setState(() {
         _currentDate = newDate;
@@ -140,14 +170,14 @@ class _GridCalendarState extends State<GridCalendar> {
   void _onDateSelected(DateTime date) {
     // Update controller if provided
     if (widget.controller != null) {
-      widget.controller!.changeDate(date);
+      widget.controller!.selectDate(date);
     }
 
     setState(() {
       final calendarDate = CalendarDate(date: date, isSelected: true);
       if (widget.multiSelect) {
-        if (_selectedDates.any((d) => d.date == date)) {
-          _selectedDates.removeWhere((d) => d.date == date);
+        if (_selectedDates.any((d) => _isSameDate(d.date, date))) {
+          _selectedDates.removeWhere((d) => _isSameDate(d.date, date));
         } else {
           _selectedDates.add(calendarDate);
         }

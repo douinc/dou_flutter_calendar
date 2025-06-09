@@ -124,8 +124,17 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   void _onControllerChanged() {
     if (widget.controller != null && mounted) {
       final newDate = widget.controller!.currentDate;
+      final isSelection =
+          widget.controller!.lastChangeType == CalendarChangeType.selection;
+
       if (_currentDate != newDate) {
-        _scrollToDate(newDate);
+        if (isSelection) {
+          // For selection changes, scroll to date and trigger callbacks
+          _scrollToDate(newDate);
+        } else {
+          // For navigation changes, just scroll without triggering selection callbacks
+          _scrollToDateWithoutCallback(newDate);
+        }
       }
     }
   }
@@ -399,6 +408,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     final index = _findDateIndex(targetDate);
 
     setState(() {
+      _currentDate = targetDate; // Update _currentDate to sync with controller
       _currentSelectedIndex = index;
       _selectedDate = CalendarDate(date: targetDate, isSelected: true);
       _updateDaysSelection(index);
@@ -416,6 +426,34 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
         // Call onDateSelected after programmatic scroll completes
         widget.onDateSelected?.call(_selectedDate.date);
+      }
+    });
+  }
+
+  void _scrollToDateWithoutCallback(DateTime targetDate) {
+    if (!_isInitialized) return;
+
+    _ensureDateInRange(targetDate);
+    final index = _findDateIndex(targetDate);
+
+    setState(() {
+      _currentDate = targetDate; // Update _currentDate to sync with controller
+      _currentSelectedIndex = index;
+      _selectedDate = CalendarDate(date: targetDate, isSelected: true);
+      _updateDaysSelection(index);
+      _isScrolling = true;
+    });
+
+    _scrollToDateAtIndex(index, animate: true).then((_) {
+      if (mounted) {
+        setState(() {
+          _isScrolling = false;
+        });
+
+        // Check and load more dates after scroll animation completes
+        _checkAndLoadMoreDates(index);
+
+        // Don't call onDateSelected for navigation-only changes
       }
     });
   }
@@ -582,7 +620,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   void _onDateTap(CalendarDate calendarDate) {
     // Update controller if provided
     if (widget.controller != null) {
-      widget.controller!.changeDate(calendarDate.date);
+      widget.controller!.selectDate(calendarDate.date);
     } else {
       _scrollToDate(calendarDate.date);
     }
@@ -655,7 +693,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
         // Update controller if provided
         if (widget.controller != null) {
-          widget.controller!.changeDate(_selectedDate.date);
+          widget.controller!.selectDate(_selectedDate.date);
         }
 
         // Call onDateSelected after snap animation and state update completes
