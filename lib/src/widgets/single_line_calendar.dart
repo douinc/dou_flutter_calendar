@@ -12,7 +12,7 @@ class _CalendarConstants {
   static const double weekdayPadding = 6.0;
   static const double itemSpacing = 4.0;
   static const double bottomPadding = 8.0;
-  static const double triangleWidth = 20.0;
+  static const double triangleWidth = 15.0;
   static const double triangleHeight = 10.0;
   static const double separatorHeight = 11.0;
   static const double topSpacing = 10.0;
@@ -25,6 +25,14 @@ class _CalendarConstants {
   static const Color selectedTextColor = Colors.white;
   static const Color unselectedTextColor = Color(0xFF71717A);
   static const Color defaultBackgroundColor = Colors.transparent;
+  static const Color separatorColor = Color(0xFFE5E5E5);
+  static const Color dayItemBackgroundColor = Color(0x1A808080);
+
+  // Text styles
+  static const double defaultWeekdayFontSize = 10.0;
+  static const double defaultDayFontSize = 14.0;
+  static const double weekdayPaddingAdjustment = 6.0;
+  static const double dayItemSizeRatio = 0.7;
 }
 
 class SingleLineCalendar extends StatefulWidget {
@@ -68,10 +76,17 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   late List<String> _weekdayNames;
   late double _calculatedHeight;
 
+  // Date range management
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
+
+  // State management
   int _currentPageIndex = 0;
   bool _isScrolling = false;
+  bool _isInitialized = false;
+
+  // Performance optimization - date index mapping
+  final Map<String, int> _dateIndexMap = {};
 
   @override
   void initState() {
@@ -79,27 +94,37 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     _initializeCalendar();
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  // MARK: - Initialization Methods
+
   void _initializeCalendar() {
     _currentDate = widget.initialDate;
+    _initializeSelectedDate();
+    _initializeDateRange();
+    _initializeLocalization();
+    _initializeWeekdayNames();
+    _calculateHeight();
+    _initializePageController();
+    _scheduleInitialCallback();
+    _isInitialized = true;
+  }
+
+  void _initializeSelectedDate() {
     final initialDates = widget.initialSelectedDates ?? [];
     _selectedDate = initialDates.isNotEmpty
         ? initialDates.first
         : CalendarDate(date: _currentDate);
-
-    _initializeDates();
-    _initializeLocalization();
-    _initializeWeekdayNames();
-    _calculateHeight();
-    _initializeSelectedDates();
-    _initializePageController();
-
-    _scheduleInitialCallback();
   }
 
-  void _initializeDates() {
+  void _initializeDateRange() {
     _startDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
     _endDate = DateTime(_currentDate.year, _currentDate.month + 1, 0);
-    _days = _getDaysInRange(_startDate, _endDate);
+    _generateDaysInRange();
   }
 
   void _initializeLocalization() {
@@ -109,15 +134,21 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   void _initializeWeekdayNames() {
-    _weekdayNames = DateFormat.EEEE().dateSymbols.STANDALONENARROWWEEKDAYS;
+    _weekdayNames = DateFormat.EEEE(
+      widget.locale?.languageCode,
+    ).dateSymbols.STANDALONENARROWWEEKDAYS;
   }
 
   void _calculateHeight() {
+    final weekdayTextStyle = widget.style?.weekdayTextStyle;
     final weekdayHeight =
-        (widget.style?.weekdayTextStyle?.fontSize ?? 10) +
+        (weekdayTextStyle?.fontSize ??
+            _CalendarConstants.defaultWeekdayFontSize) +
         _CalendarConstants.weekdayPadding * 2 +
-        6;
-    final dayItemHeight = widget.itemWidth * 0.7;
+        _CalendarConstants.weekdayPaddingAdjustment;
+
+    final dayItemHeight =
+        widget.itemWidth * _CalendarConstants.dayItemSizeRatio;
 
     _calculatedHeight =
         weekdayHeight +
@@ -126,11 +157,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
         _CalendarConstants.bottomPadding;
   }
 
-  void _initializeSelectedDates() {
-    _currentPageIndex = _findDateIndex(_selectedDate.date);
-  }
-
   void _initializePageController() {
+    _currentPageIndex = _findDateIndex(_selectedDate.date);
     _pageController = PageController(
       initialPage: _currentPageIndex,
       viewportFraction: _CalendarConstants.viewportFraction,
@@ -139,8 +167,15 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
   void _scheduleInitialCallback() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onDateSelected?.call(_selectedDate.date);
+      if (mounted) {
+        widget.onDateSelected?.call(_selectedDate.date);
+      }
     });
+  }
+
+  void _generateDaysInRange() {
+    _days = _getDaysInRange(_startDate, _endDate);
+    _rebuildDateIndexMap();
   }
 
   List<CalendarDate> _getDaysInRange(DateTime start, DateTime end) {
@@ -155,28 +190,74 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     return days;
   }
 
+  void _rebuildDateIndexMap() {
+    _dateIndexMap.clear();
+    for (int i = 0; i < _days.length; i++) {
+      final dateKey = _getDateKey(_days[i].date);
+      _dateIndexMap[dateKey] = i;
+    }
+  }
+
+  String _getDateKey(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
   bool _isSameDate(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
         date1.month == date2.month &&
         date1.day == date2.day;
   }
 
+  /// Optimized date index finder using Map lookup instead of linear search
   int _findDateIndex(DateTime targetDate) {
-    final index = _days.indexWhere((day) => _isSameDate(day.date, targetDate));
-    return index == -1 ? 0 : index;
+    final dateKey = _getDateKey(targetDate);
+    final index = _dateIndexMap[dateKey];
+
+    if (index != null) {
+      return index;
+    }
+
+    // Fallback to linear search if map lookup fails
+    final fallbackIndex = _days.indexWhere(
+      (day) => _isSameDate(day.date, targetDate),
+    );
+
+    if (fallbackIndex != -1) {
+      _dateIndexMap[dateKey] = fallbackIndex;
+      return fallbackIndex;
+    }
+
+    return 0;
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  void _ensureDateInRange(DateTime targetDate) {
+    bool rangeChanged = false;
+
+    if (targetDate.isBefore(_startDate)) {
+      _startDate = DateTime(targetDate.year, targetDate.month - 1, 1);
+      rangeChanged = true;
+    }
+
+    if (targetDate.isAfter(_endDate)) {
+      _endDate = DateTime(targetDate.year, targetDate.month + 1, 0);
+      rangeChanged = true;
+    }
+
+    if (rangeChanged) {
+      _generateDaysInRange();
+      _currentPageIndex = _findDateIndex(_selectedDate.date);
+    }
   }
 
   void _scrollToDate(DateTime targetDate) {
+    if (!_isInitialized) return;
+
+    _ensureDateInRange(targetDate);
     final index = _findDateIndex(targetDate);
 
     setState(() {
       _currentPageIndex = index;
+      _selectedDate = CalendarDate(date: targetDate);
       _isScrolling = true;
     });
 
@@ -187,21 +268,87 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
           curve: Curves.easeInOut,
         )
         .then((_) {
-          setState(() {
-            _isScrolling = false;
-          });
-          // 스크롤 완료 후 콜백 호출
-          widget.onDateSelected?.call(_days[index].date);
+          if (mounted) {
+            setState(() {
+              _isScrolling = false;
+            });
+
+            final finalIndex = _findDateIndex(targetDate);
+            if (finalIndex < _days.length) {
+              widget.onDateSelected?.call(_days[finalIndex].date);
+            }
+          }
         });
+  }
+
+  void _handlePageChanged(int index) {
+    if (index == _currentPageIndex || index >= _days.length) return;
+
+    setState(() {
+      _currentPageIndex = index;
+      _selectedDate = _days[index];
+    });
+
+    if (!_isScrolling && mounted) {
+      widget.onDateSelected?.call(_days[index].date);
+    }
+
+    _checkAndLoadMoreDates(index);
+  }
+
+  void _checkAndLoadMoreDates(int index) {
+    if (index >= _days.length - _CalendarConstants.loadThreshold) {
+      _expandDaysForward();
+    }
+
+    if (index <= _CalendarConstants.loadThreshold) {
+      _expandDaysBackward();
+    }
+  }
+
+  void _expandDaysForward() {
+    final newEndDate = _endDate.add(
+      const Duration(days: _CalendarConstants.loadDaysCount),
+    );
+
+    setState(() {
+      _endDate = newEndDate;
+      _generateDaysInRange();
+    });
+  }
+
+  void _expandDaysBackward() {
+    final currentSelectedDate = _selectedDate.date;
+    final newStartDate = _startDate.subtract(
+      const Duration(days: _CalendarConstants.loadDaysCount),
+    );
+
+    setState(() {
+      _startDate = newStartDate;
+      _generateDaysInRange();
+      _currentPageIndex = _findDateIndex(currentSelectedDate);
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _pageController.hasClients) {
+        _pageController.jumpToPage(_currentPageIndex);
+      }
+    });
+  }
+
+  void _onDateTap(CalendarDate calendarDate) {
+    _scrollToDate(calendarDate.date);
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayDate = _selectedDate.date;
+    if (!_isInitialized) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [_buildHeader(displayDate), _buildCalendarBody()],
+      children: [_buildHeader(_selectedDate.date), _buildCalendarBody()],
     );
   }
 
@@ -221,7 +368,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildTriangleIndicator(),
-        SizedBox(height: _CalendarConstants.topSpacing),
+        const SizedBox(height: _CalendarConstants.topSpacing),
         _buildDateCarousel(),
       ],
     );
@@ -246,7 +393,10 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
             top: 0,
             left: 0,
             right: 0,
-            child: Container(height: 1, color: Colors.grey[300]),
+            child: Container(
+              height: 1,
+              color: _CalendarConstants.separatorColor,
+            ),
           ),
         ],
       ),
@@ -266,6 +416,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   Widget _buildDateItem(BuildContext context, int index) {
+    if (index >= _days.length) return const SizedBox.shrink();
+
     final day = _days[index];
     final isSelected = index == _currentPageIndex;
 
@@ -286,6 +438,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
   Widget _buildWeekdayLabel(DateTime date, bool isSelected) {
     final weekday = date.weekday;
+    final weekdayIndex = weekday == 7 ? 0 : weekday; // Adjust Sunday index
 
     return Container(
       padding: const EdgeInsets.all(_CalendarConstants.weekdayPadding),
@@ -297,7 +450,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       ),
       child: FittedBox(
         child: Text(
-          _weekdayNames[weekday - 1],
+          _weekdayNames[weekdayIndex],
           style: _getWeekdayTextStyle(isSelected),
         ),
       ),
@@ -305,12 +458,15 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   TextStyle _getWeekdayTextStyle(bool isSelected) {
-    return (widget.style?.weekdayTextStyle ?? const TextStyle(fontSize: 10))
-        .copyWith(
-          color: isSelected
-              ? _CalendarConstants.selectedTextColor
-              : _CalendarConstants.unselectedTextColor,
-        );
+    final baseStyle =
+        widget.style?.weekdayTextStyle ??
+        const TextStyle(fontSize: _CalendarConstants.defaultWeekdayFontSize);
+
+    return baseStyle.copyWith(
+      color: isSelected
+          ? _CalendarConstants.selectedTextColor
+          : _CalendarConstants.unselectedTextColor,
+    );
   }
 
   Widget _buildDayItem(CalendarDate calendarDate, bool isSelected) {
@@ -325,7 +481,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   Widget _buildDefaultDayItem(CalendarDate calendarDate, bool isSelected) {
-    final itemSize = widget.itemWidth * 0.7;
+    final itemSize = widget.itemWidth * _CalendarConstants.dayItemSizeRatio;
 
     return GestureDetector(
       onTap: () => _onDateTap(calendarDate),
@@ -335,7 +491,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
         decoration: BoxDecoration(
           color: isSelected
               ? _CalendarConstants.selectedBackgroundColor
-              : Colors.grey.withAlpha(26),
+              : _CalendarConstants.dayItemBackgroundColor,
           shape: BoxShape.circle,
         ),
         child: Center(
@@ -354,69 +510,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     return TextStyle(
       color: isSelected ? _CalendarConstants.selectedTextColor : Colors.black,
       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      fontSize: 14,
+      fontSize: _CalendarConstants.defaultDayFontSize,
     );
-  }
-
-  void _handlePageChanged(int index) {
-    if (index != _currentPageIndex) {
-      // 항상 인덱스와 선택된 날짜 업데이트
-      setState(() {
-        _currentPageIndex = index;
-        _selectedDate = _days[index];
-      });
-
-      // 스크롤 중이 아닐 때만 콜백 호출
-      if (!_isScrolling) {
-        widget.onDateSelected?.call(_days[index].date);
-      }
-
-      _checkAndLoadMoreDates(index);
-    }
-  }
-
-  void _checkAndLoadMoreDates(int index) {
-    // Load more dates when approaching the end
-    if (index >= _days.length - _CalendarConstants.loadThreshold) {
-      _expandDaysForward();
-    }
-
-    // Load more dates when approaching the beginning
-    if (index <= _CalendarConstants.loadThreshold) {
-      _expandDaysBackward();
-    }
-  }
-
-  void _expandDaysForward() {
-    setState(() {
-      _endDate = _endDate.add(
-        const Duration(days: _CalendarConstants.loadDaysCount),
-      );
-      _days = _getDaysInRange(_startDate, _endDate);
-    });
-  }
-
-  void _expandDaysBackward() {
-    final newStartDate = _startDate.subtract(
-      const Duration(days: _CalendarConstants.loadDaysCount),
-    );
-    final newDays = _getDaysInRange(newStartDate, _endDate);
-    final addedDaysCount = newDays.length - _days.length;
-
-    setState(() {
-      _startDate = newStartDate;
-      _days = newDays;
-      _currentPageIndex += addedDaysCount;
-    });
-
-    // PageController의 페이지도 업데이트
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pageController.jumpToPage(_currentPageIndex);
-    });
-  }
-
-  void _onDateTap(CalendarDate calendarDate) {
-    _scrollToDate(calendarDate.date);
   }
 }
 
