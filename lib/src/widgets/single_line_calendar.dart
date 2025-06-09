@@ -7,10 +7,10 @@ import 'dart:async';
 // Constants for better maintainability
 class _CalendarConstants {
   static const double defaultHeight = 60.0;
-  static const double defaultItemWidth = 50.0;
-  static const double dateSpacing = 2.5;
+  static const double defaultDayWidth = 50.0;
+  static const double dateSpacing = 4;
   static const double weekdayPadding = 6.0;
-  static const double itemSpacing = 4.0;
+  static const double weekdayToDateSpacing = 4.0;
   static const double bottomPadding = 8.0;
   static const double triangleWidth = 15.0;
   static const double triangleHeight = 10.0;
@@ -58,7 +58,7 @@ class SingleLineCalendar extends StatefulWidget {
     this.initialSelectedDates,
     this.days,
     this.height = _CalendarConstants.defaultHeight,
-    this.itemWidth = _CalendarConstants.defaultItemWidth,
+    this.itemWidth = _CalendarConstants.defaultDayWidth,
     this.style,
     this.headerDateFormat,
     this.locale,
@@ -168,7 +168,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
     _calculatedHeight =
         weekdayHeight +
-        _CalendarConstants.itemSpacing +
+        _CalendarConstants.weekdayToDateSpacing +
         dayItemHeight +
         _CalendarConstants.bottomPadding;
   }
@@ -396,8 +396,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
     final itemTotalWidth = _getItemTotalWidth();
     final viewportWidth = _scrollController.position.viewportDimension;
+    // Use itemTotalWidth / 2 instead of widget.itemWidth / 2 to account for dateSpacing
     final targetOffset =
-        (index * itemTotalWidth) - (viewportWidth / 2) + (widget.itemWidth / 2);
+        (index * itemTotalWidth) - (viewportWidth / 2) + (itemTotalWidth / 2);
 
     final clampedOffset = targetOffset.clamp(
       _scrollController.position.minScrollExtent,
@@ -724,7 +725,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildWeekdayLabel(day.date, isSelected),
-            const SizedBox(height: _CalendarConstants.itemSpacing),
+            const SizedBox(height: _CalendarConstants.weekdayToDateSpacing),
             Flexible(child: _buildDayItem(day)),
           ],
         ),
