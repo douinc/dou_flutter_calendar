@@ -627,6 +627,24 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     }
   }
 
+  void _onPreviousDay() {
+    final previousDay = _selectedDate.date.subtract(const Duration(days: 1));
+    if (widget.controller != null) {
+      widget.controller!.selectDate(previousDay);
+    } else {
+      _scrollToDate(previousDay);
+    }
+  }
+
+  void _onNextDay() {
+    final nextDay = _selectedDate.date.add(const Duration(days: 1));
+    if (widget.controller != null) {
+      widget.controller!.selectDate(nextDay);
+    } else {
+      _scrollToDate(nextDay);
+    }
+  }
+
   // MARK: - Gesture Handling
 
   /// Handle pan gesture start - initialize pan state and stop animations
@@ -738,7 +756,11 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
       return widget.headerBuilder!(displayDate);
     }
 
-    return CalendarHeader(dateText: fullDateText);
+    return CalendarHeader(
+      dateText: fullDateText,
+      onPrevious: _onPreviousDay,
+      onNext: _onNextDay,
+    );
   }
 
   bool _isToday(DateTime date) {

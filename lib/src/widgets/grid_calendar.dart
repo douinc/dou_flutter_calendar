@@ -237,8 +237,8 @@ class _GridCalendarState extends State<GridCalendar> {
 
     return CalendarHeader(
       dateText: dateText,
-      onPreviousMonth: _onPreviousMonth,
-      onNextMonth: _onNextMonth,
+      onPrevious: _onPreviousMonth,
+      onNext: _onNextMonth,
     );
   }
 }

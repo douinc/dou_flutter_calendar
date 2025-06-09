@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class CalendarHeader extends StatelessWidget {
   final String dateText;
-  final VoidCallback? onPreviousMonth;
-  final VoidCallback? onNextMonth;
+  final VoidCallback? onPrevious;
+  final VoidCallback? onNext;
 
   const CalendarHeader({
     super.key,
     required this.dateText,
-    this.onPreviousMonth,
-    this.onNextMonth,
+    this.onPrevious,
+    this.onNext,
   });
 
   @override
@@ -21,13 +21,10 @@ class CalendarHeader extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
-            onPressed: onPreviousMonth,
+            onPressed: onPrevious,
           ),
           Text(dateText, style: Theme.of(context).textTheme.titleLarge),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            onPressed: onNextMonth,
-          ),
+          IconButton(icon: const Icon(Icons.chevron_right), onPressed: onNext),
         ],
       ),
     );
