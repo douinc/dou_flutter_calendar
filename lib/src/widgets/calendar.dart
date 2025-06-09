@@ -12,7 +12,12 @@ class Calendar extends StatefulWidget {
   final List<CalendarDate>? initialSelectedDates;
   final bool multiSelect;
   final List<CalendarDate>? days;
-  final CalendarStyle? style;
+  final GridCalendarStyle? gridStyle;
+  final SingleLineCalendarStyle? singleLineStyle;
+  @Deprecated(
+    'Use gridStyle for grid calendar and singleLineStyle for single line calendar',
+  )
+  final GridCalendarStyle? style;
   final String? headerDateFormat;
   final CalendarViewType viewType;
   final Locale? locale;
@@ -26,6 +31,11 @@ class Calendar extends StatefulWidget {
     this.initialSelectedDates,
     this.multiSelect = false,
     this.days,
+    this.gridStyle,
+    this.singleLineStyle,
+    @Deprecated(
+      'Use gridStyle for grid calendar and singleLineStyle for single line calendar',
+    )
     this.style,
     this.headerDateFormat,
     this.viewType = CalendarViewType.grid,
@@ -54,7 +64,7 @@ class _CalendarState extends State<Calendar> {
         initialDate: widget.initialDate ?? DateTime.now(),
         initialSelectedDates: widget.initialSelectedDates,
         onDateSelected: widget.onDateSelected,
-        style: widget.style,
+        style: widget.singleLineStyle,
         headerDateFormat: widget.headerDateFormat,
         locale: widget.locale,
         dayItemBuilder: widget.dayBuilder,
@@ -68,7 +78,7 @@ class _CalendarState extends State<Calendar> {
       onDatesSelected: widget.onDatesSelected,
       multiSelect: widget.multiSelect,
       days: widget.days,
-      style: widget.style,
+      style: widget.gridStyle ?? widget.style,
       headerDateFormat: widget.headerDateFormat,
       locale: widget.locale,
       dayItemBuilder: widget.dayBuilder,

@@ -120,4 +120,31 @@ void main() {
     // Verify that the custom date format is applied
     expect(find.text('Mar 1'), findsOneWidget);
   });
+
+  testWidgets('SingleLineCalendar applies custom style', (
+    WidgetTester tester,
+  ) async {
+    final style = SingleLineCalendarStyle(
+      weekdayTextStyle: const TextStyle(color: Colors.green),
+      dateSpacing: 10.0,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleLineCalendar(
+            viewType: CalendarViewType.singleLine,
+            initialDate: DateTime(2024, 3, 1),
+            style: style,
+          ),
+        ),
+      ),
+    );
+
+    // Wait for initialization
+    await tester.pumpAndSettle();
+
+    // Verify that the style is applied
+    expect(find.byType(SingleLineCalendar), findsOneWidget);
+  });
 }

@@ -97,7 +97,7 @@ void main() {
   });
 
   testWidgets('GridCalendar applies custom style', (WidgetTester tester) async {
-    final style = CalendarStyle(
+    final style = GridCalendarStyle(
       selectionColor: Colors.red,
       dateTextStyle: const TextStyle(color: Colors.blue),
       weekdayTextStyle: const TextStyle(color: Colors.green),

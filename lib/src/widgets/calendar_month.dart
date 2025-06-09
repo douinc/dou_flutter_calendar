@@ -10,7 +10,7 @@ class CalendarMonth extends StatelessWidget {
   final Function(DateTime)? onDateSelected;
   final List<CalendarDate>? selectedDates;
   final bool multiSelect;
-  final CalendarStyle? style;
+  final GridCalendarStyle? style;
   final DateTime currentMonth;
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayItemBuilder;

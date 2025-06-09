@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CalendarStyle {
+class GridCalendarStyle {
   final Color? selectionColor;
   final TextStyle? dateTextStyle;
   final TextStyle? weekdayTextStyle;
@@ -11,9 +11,8 @@ class CalendarStyle {
   final double? cellBorderWidth;
   final double? rowSpacing;
   final double? otherMonthOpacity;
-  final double? dateSpacing;
 
-  const CalendarStyle({
+  const GridCalendarStyle({
     this.selectionColor,
     this.dateTextStyle,
     this.weekdayTextStyle,
@@ -24,10 +23,9 @@ class CalendarStyle {
     this.cellBorderWidth,
     this.rowSpacing,
     this.otherMonthOpacity,
-    this.dateSpacing,
   });
 
-  CalendarStyle copyWith({
+  GridCalendarStyle copyWith({
     Color? selectionColor,
     TextStyle? dateTextStyle,
     TextStyle? weekdayTextStyle,
@@ -38,9 +36,8 @@ class CalendarStyle {
     double? cellBorderWidth,
     double? rowSpacing,
     double? otherMonthOpacity,
-    double? dateSpacing,
   }) {
-    return CalendarStyle(
+    return GridCalendarStyle(
       selectionColor: selectionColor ?? this.selectionColor,
       dateTextStyle: dateTextStyle ?? this.dateTextStyle,
       weekdayTextStyle: weekdayTextStyle ?? this.weekdayTextStyle,
@@ -51,9 +48,29 @@ class CalendarStyle {
       cellBorderWidth: cellBorderWidth ?? this.cellBorderWidth,
       rowSpacing: rowSpacing ?? this.rowSpacing,
       otherMonthOpacity: otherMonthOpacity ?? this.otherMonthOpacity,
+    );
+  }
+}
+
+class SingleLineCalendarStyle {
+  final TextStyle? weekdayTextStyle;
+  final double? dateSpacing;
+
+  const SingleLineCalendarStyle({this.weekdayTextStyle, this.dateSpacing});
+
+  SingleLineCalendarStyle copyWith({
+    TextStyle? weekdayTextStyle,
+    double? dateSpacing,
+  }) {
+    return SingleLineCalendarStyle(
+      weekdayTextStyle: weekdayTextStyle ?? this.weekdayTextStyle,
       dateSpacing: dateSpacing ?? this.dateSpacing,
     );
   }
 }
+
+// 기존 CalendarStyle은 호환성을 위해 GridCalendarStyle의 alias로 유지
+@Deprecated('Use GridCalendarStyle instead')
+typedef CalendarStyle = GridCalendarStyle;
 
 enum CalendarViewType { singleLine, grid }

@@ -43,7 +43,7 @@ class SingleLineCalendar extends StatefulWidget {
   final List<CalendarDate>? initialSelectedDates;
   final List<CalendarDate>? days;
   final double dayWidth;
-  final CalendarStyle? style;
+  final SingleLineCalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayItemBuilder;

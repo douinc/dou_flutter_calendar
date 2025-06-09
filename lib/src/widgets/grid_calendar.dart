@@ -13,7 +13,7 @@ class GridCalendar extends StatefulWidget {
   final List<CalendarDate>? initialSelectedDates;
   final bool multiSelect;
   final List<CalendarDate>? days;
-  final CalendarStyle? style;
+  final GridCalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayItemBuilder;

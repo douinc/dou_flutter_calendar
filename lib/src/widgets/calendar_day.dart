@@ -5,7 +5,7 @@ import '../models/calendar_style.dart';
 class CalendarDay extends StatelessWidget {
   final CalendarDate date;
   final Function(DateTime)? onDateSelected;
-  final CalendarStyle? style;
+  final GridCalendarStyle? style;
   final DateTime currentMonth;
   final bool isSelected;
   final Locale? locale;

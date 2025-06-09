@@ -31,12 +31,30 @@ class CalendarHeader extends StatelessWidget {
         date.day == now.day;
   }
 
+  bool _isYesterday(DateTime date) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    return date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day;
+  }
+
   String? _getTodayText() {
     const translations = {
       'en': '(Today)',
       'ko': '(오늘)',
       'ja': '(今日)',
       'zh': '(今天)',
+    };
+    return translations[locale?.languageCode];
+  }
+
+  String? _getYesterdayText() {
+    const translations = {
+      'en': '(Yesterday)',
+      'ko': '(어제)',
+      'ja': '(昨日)',
+      'zh': '(昨天)',
     };
     return translations[locale?.languageCode];
   }
@@ -54,12 +72,14 @@ class CalendarHeader extends StatelessWidget {
               : DateFormat.yMMMM(locale?.languageCode));
 
     final dateText = dateFormatter.format(displayDate);
-    final todayText =
-        isSingleLine && _isToday(displayDate) && dateFormat == null
-        ? _getTodayText() != null
-              ? ' ${_getTodayText()}'
-              : ''
-        : '';
+    String additionalText = '';
+    if (isSingleLine && dateFormat == null) {
+      if (_isToday(displayDate) && _getTodayText() != null) {
+        additionalText = '${_getTodayText()}';
+      } else if (_isYesterday(displayDate) && _getYesterdayText() != null) {
+        additionalText = '${_getYesterdayText()}';
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 15.0),
@@ -72,7 +92,7 @@ class CalendarHeader extends StatelessWidget {
               onPressed: onPreviousMonth,
             ),
           Text(
-            dateText + todayText,
+            dateText + additionalText,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           if (showNavigation)

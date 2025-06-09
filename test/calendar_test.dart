@@ -97,8 +97,10 @@ void main() {
     expect(selectedDates[1].date, DateTime(2024, 3, 16));
   });
 
-  testWidgets('Calendar applies custom style', (WidgetTester tester) async {
-    final style = CalendarStyle(
+  testWidgets('Calendar applies custom grid style', (
+    WidgetTester tester,
+  ) async {
+    final style = GridCalendarStyle(
       selectionColor: Colors.red,
       dateTextStyle: const TextStyle(color: Colors.blue),
       weekdayTextStyle: const TextStyle(color: Colors.green),
@@ -107,7 +109,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: Calendar(initialDate: DateTime(2024, 3, 1), style: style),
+          body: Calendar(initialDate: DateTime(2024, 3, 1), gridStyle: style),
         ),
       ),
     );
