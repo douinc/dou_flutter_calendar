@@ -52,7 +52,15 @@ class _GridCalendarState extends State<GridCalendar> {
     super.initState();
     _currentDate =
         widget.controller?.currentDate ?? widget.initialDate ?? DateTime.now();
-    _selectedDates = widget.initialSelectedDates ?? [];
+
+    // If no initial selected dates provided, default to current date
+    if (widget.initialSelectedDates == null ||
+        widget.initialSelectedDates!.isEmpty) {
+      _selectedDates = [CalendarDate(date: _currentDate, isSelected: true)];
+    } else {
+      _selectedDates = widget.initialSelectedDates!;
+    }
+
     _updateDays();
 
     // Listen to controller changes if provided
@@ -131,7 +139,13 @@ class _GridCalendarState extends State<GridCalendar> {
     }
 
     if (widget.initialSelectedDates != oldWidget.initialSelectedDates) {
-      _selectedDates = widget.initialSelectedDates ?? [];
+      // If no initial selected dates provided, default to current date
+      if (widget.initialSelectedDates == null ||
+          widget.initialSelectedDates!.isEmpty) {
+        _selectedDates = [CalendarDate(date: _currentDate, isSelected: true)];
+      } else {
+        _selectedDates = widget.initialSelectedDates!;
+      }
     }
   }
 
@@ -184,6 +198,7 @@ class _GridCalendarState extends State<GridCalendar> {
       } else {
         _selectedDates = [calendarDate];
       }
+
       widget.onDateSelected?.call(date);
       widget.onDatesSelected?.call(_selectedDates);
     });

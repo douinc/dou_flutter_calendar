@@ -35,7 +35,9 @@ class CalendarDay extends StatelessWidget {
               height: style?.cellHeight ?? 60,
               padding: EdgeInsets.all(style?.cellPadding ?? 4),
               decoration: BoxDecoration(
-                color: null,
+                color: isSelected
+                    ? (style?.selectionColor ?? Colors.blue).withAlpha(20)
+                    : null,
                 borderRadius: BorderRadius.circular(
                   style?.cellBorderRadius ?? 8,
                 ),
@@ -43,7 +45,7 @@ class CalendarDay extends StatelessWidget {
                   color: isSelected
                       ? style?.selectionColor ?? Colors.blue
                       : Colors.transparent,
-                  width: style?.cellBorderWidth ?? 1,
+                  width: style?.cellBorderWidth ?? 2,
                 ),
               ),
               child: Center(
