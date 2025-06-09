@@ -7,7 +7,6 @@ import 'package:intl/date_symbol_data_local.dart';
 class _CalendarConstants {
   static const double defaultHeight = 60.0;
   static const double defaultItemWidth = 50.0;
-  static const double viewportFraction = 0.13;
   static const double horizontalMargin = 2.5;
   static const double weekdayPadding = 6.0;
   static const double itemSpacing = 4.0;
@@ -159,10 +158,34 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
   void _initializePageController() {
     _currentPageIndex = _findDateIndex(_selectedDate.date);
+    final calculatedViewportFraction = _calculateViewportFraction();
     _pageController = PageController(
       initialPage: _currentPageIndex,
-      viewportFraction: _CalendarConstants.viewportFraction,
+      viewportFraction: calculatedViewportFraction,
     );
+  }
+
+  /// Calculate viewport fraction based on horizontal spacing
+  /// More spacing = larger viewport fraction = fewer items visible
+  double _calculateViewportFraction() {
+    final horizontalSpacing =
+        widget.style?.horizontalSpacing ?? _CalendarConstants.horizontalMargin;
+
+    // Base calculation: how much of the screen width each item should take
+    // We want approximately 7-8 items visible at default spacing
+    const targetVisibleItems = 7.5;
+    final baseViewportFraction = 1.0 / targetVisibleItems;
+
+    // Adjust based on spacing - more spacing means larger viewport fraction
+    final spacingMultiplier =
+        (horizontalSpacing / _CalendarConstants.horizontalMargin).clamp(
+          0.5,
+          3.0,
+        );
+    final calculatedFraction = baseViewportFraction * spacingMultiplier;
+
+    // Clamp to reasonable bounds
+    return calculatedFraction.clamp(0.08, 0.25);
   }
 
   void _scheduleInitialCallback() {
@@ -420,11 +443,11 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
     final day = _days[index];
     final isSelected = index == _currentPageIndex;
+    final horizontalSpacing =
+        widget.style?.horizontalSpacing ?? _CalendarConstants.horizontalMargin;
 
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: _CalendarConstants.horizontalMargin,
-      ),
+      margin: EdgeInsets.symmetric(horizontal: horizontalSpacing),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
