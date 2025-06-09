@@ -27,10 +27,12 @@ class CalendarDay extends StatelessWidget {
     final isCurrentMonth = date.date.month == currentMonth.month;
     final otherMonthOpacity = style?.otherMonthOpacity ?? 0.2;
 
+    final updatedDate = date.copyWith(isSelected: isSelected);
+
     return GestureDetector(
       onTap: () => onDateSelected?.call(date.date),
       child: dayItemBuilder != null
-          ? dayItemBuilder!(date)
+          ? dayItemBuilder!(updatedDate)
           : Container(
               height: style?.cellHeight ?? 60,
               padding: EdgeInsets.all(style?.cellPadding ?? 4),
