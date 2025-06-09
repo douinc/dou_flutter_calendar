@@ -164,11 +164,11 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     );
   }
 
-  /// Calculate viewport fraction based on horizontal spacing
+  /// Calculate viewport fraction based on date spacing
   /// More spacing = larger viewport fraction = fewer items visible
   double _calculateViewportFraction() {
-    final horizontalSpacing =
-        widget.style?.horizontalSpacing ?? _CalendarConstants.horizontalMargin;
+    final dateSpacing =
+        widget.style?.dateSpacing ?? _CalendarConstants.horizontalMargin;
 
     // Base calculation: how much of the screen width each item should take
     // We want approximately 7-8 items visible at default spacing
@@ -177,10 +177,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
     // Adjust based on spacing - more spacing means larger viewport fraction
     final spacingMultiplier =
-        (horizontalSpacing / _CalendarConstants.horizontalMargin).clamp(
-          0.5,
-          3.0,
-        );
+        (dateSpacing / _CalendarConstants.horizontalMargin).clamp(0.5, 3.0);
     final calculatedFraction = baseViewportFraction * spacingMultiplier;
 
     // Clamp to reasonable bounds
@@ -452,11 +449,11 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
     final day = _days[index];
     final isSelected = index == _currentPageIndex;
-    final horizontalSpacing =
-        widget.style?.horizontalSpacing ?? _CalendarConstants.horizontalMargin;
+    final dateSpacing =
+        widget.style?.dateSpacing ?? _CalendarConstants.horizontalMargin;
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: horizontalSpacing),
+      margin: EdgeInsets.symmetric(horizontal: dateSpacing),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

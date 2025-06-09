@@ -11,7 +11,7 @@ class CalendarStyle {
   final double? cellBorderWidth;
   final double? rowSpacing;
   final double? otherMonthOpacity;
-  final double? horizontalSpacing;
+  final double? dateSpacing;
 
   const CalendarStyle({
     this.selectionColor,
@@ -24,7 +24,7 @@ class CalendarStyle {
     this.cellBorderWidth,
     this.rowSpacing,
     this.otherMonthOpacity,
-    this.horizontalSpacing,
+    this.dateSpacing,
   });
 
   CalendarStyle copyWith({
@@ -38,7 +38,7 @@ class CalendarStyle {
     double? cellBorderWidth,
     double? rowSpacing,
     double? otherMonthOpacity,
-    double? horizontalSpacing,
+    double? dateSpacing,
   }) {
     return CalendarStyle(
       selectionColor: selectionColor ?? this.selectionColor,
@@ -51,7 +51,7 @@ class CalendarStyle {
       cellBorderWidth: cellBorderWidth ?? this.cellBorderWidth,
       rowSpacing: rowSpacing ?? this.rowSpacing,
       otherMonthOpacity: otherMonthOpacity ?? this.otherMonthOpacity,
-      horizontalSpacing: horizontalSpacing ?? this.horizontalSpacing,
+      dateSpacing: dateSpacing ?? this.dateSpacing,
     );
   }
 }
