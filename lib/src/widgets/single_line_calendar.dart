@@ -28,7 +28,7 @@ class _CalendarConstants {
   static const Color dayItemBackgroundColor = Color(0x1A808080);
 
   // Text styles
-  static const double defaultWeekdayFontSize = 10.0;
+  static const double defaultWeekdayFontSize = 16.0;
   static const double defaultDayFontSize = 14.0;
   static const double weekdayPaddingAdjustment = 6.0;
   static const double dayItemSizeRatio = 0.7;
