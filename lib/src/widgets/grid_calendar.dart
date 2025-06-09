@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/calendar_date.dart';
 import '../models/calendar_style.dart';
+import '../controllers/calendar_controller.dart';
 import '../utils/calendar_utils.dart';
 import 'calendar_header.dart';
 import 'calendar_month.dart';
@@ -18,7 +19,8 @@ class GridCalendar extends StatefulWidget {
   final String? headerDateFormat;
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
-  final Widget Function(String dateText)? headerBuilder;
+  final Widget Function(DateTime currentDate)? headerBuilder;
+  final CalendarController? controller;
 
   const GridCalendar({
     super.key,
@@ -33,6 +35,7 @@ class GridCalendar extends StatefulWidget {
     this.locale,
     this.dayBuilder,
     this.headerBuilder,
+    this.controller,
   });
 
   @override
@@ -47,9 +50,13 @@ class _GridCalendarState extends State<GridCalendar> {
   @override
   void initState() {
     super.initState();
-    _currentDate = widget.initialDate ?? DateTime.now();
+    _currentDate =
+        widget.controller?.currentDate ?? widget.initialDate ?? DateTime.now();
     _selectedDates = widget.initialSelectedDates ?? [];
     _updateDays();
+
+    // Listen to controller changes if provided
+    widget.controller?.addListener(_onControllerChanged);
 
     if (widget.locale != null) {
       initializeDateFormatting(widget.locale!.languageCode);
@@ -64,8 +71,35 @@ class _GridCalendarState extends State<GridCalendar> {
   }
 
   @override
+  void dispose() {
+    widget.controller?.removeListener(_onControllerChanged);
+    super.dispose();
+  }
+
+  void _onControllerChanged() {
+    if (widget.controller != null) {
+      setState(() {
+        _currentDate = widget.controller!.currentDate;
+        _updateDays();
+      });
+    }
+  }
+
+  @override
   void didUpdateWidget(GridCalendar oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Handle controller changes
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.removeListener(_onControllerChanged);
+      widget.controller?.addListener(_onControllerChanged);
+
+      if (widget.controller != null) {
+        _currentDate = widget.controller!.currentDate;
+        _updateDays();
+      }
+    }
+
     if (widget.initialSelectedDates != oldWidget.initialSelectedDates) {
       _selectedDates = widget.initialSelectedDates ?? [];
     }
@@ -80,20 +114,35 @@ class _GridCalendarState extends State<GridCalendar> {
   }
 
   void _onPreviousMonth() {
-    setState(() {
-      _currentDate = DateTime(_currentDate.year, _currentDate.month - 1);
-      _updateDays();
-    });
+    final newDate = DateTime(_currentDate.year, _currentDate.month - 1);
+    if (widget.controller != null) {
+      widget.controller!.changeDate(newDate);
+    } else {
+      setState(() {
+        _currentDate = newDate;
+        _updateDays();
+      });
+    }
   }
 
   void _onNextMonth() {
-    setState(() {
-      _currentDate = DateTime(_currentDate.year, _currentDate.month + 1);
-      _updateDays();
-    });
+    final newDate = DateTime(_currentDate.year, _currentDate.month + 1);
+    if (widget.controller != null) {
+      widget.controller!.changeDate(newDate);
+    } else {
+      setState(() {
+        _currentDate = newDate;
+        _updateDays();
+      });
+    }
   }
 
   void _onDateSelected(DateTime date) {
+    // Update controller if provided
+    if (widget.controller != null) {
+      widget.controller!.changeDate(date);
+    }
+
     setState(() {
       final calendarDate = CalendarDate(date: date, isSelected: true);
       if (widget.multiSelect) {
@@ -130,16 +179,16 @@ class _GridCalendarState extends State<GridCalendar> {
   }
 
   Widget _buildHeader() {
-    // Generate dateText with common logic
+    if (widget.headerBuilder != null) {
+      return widget.headerBuilder!(_currentDate);
+    }
+
+    // Generate dateText for default header
     final dateFormatter = widget.headerDateFormat != null
         ? DateFormat(widget.headerDateFormat, widget.locale?.languageCode)
         : DateFormat.yMMMM(widget.locale?.languageCode);
 
     final dateText = dateFormatter.format(_currentDate);
-
-    if (widget.headerBuilder != null) {
-      return widget.headerBuilder!(dateText);
-    }
 
     return CalendarHeader(
       dateText: dateText,

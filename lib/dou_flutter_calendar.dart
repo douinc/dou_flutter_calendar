@@ -7,3 +7,4 @@ export 'src/widgets/calendar_week.dart';
 export 'src/widgets/calendar_month.dart';
 export 'src/models/calendar_date.dart';
 export 'src/utils/calendar_utils.dart';
+export 'src/controllers/calendar_controller.dart';

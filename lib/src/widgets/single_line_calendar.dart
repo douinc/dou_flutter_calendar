@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
+import '../controllers/calendar_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'dart:async';
@@ -47,7 +48,8 @@ class SingleLineCalendar extends StatefulWidget {
   final String? headerDateFormat;
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
-  final Widget Function(String dateText)? headerBuilder;
+  final Widget Function(DateTime currentDate)? headerBuilder;
+  final CalendarController? controller;
 
   const SingleLineCalendar({
     super.key,
@@ -62,6 +64,7 @@ class SingleLineCalendar extends StatefulWidget {
     this.locale,
     this.dayBuilder,
     this.headerBuilder,
+    this.controller,
   });
 
   @override
@@ -105,19 +108,47 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   void initState() {
     super.initState();
     _initializeCalendar();
+
+    // Listen to controller changes if provided
+    widget.controller?.addListener(_onControllerChanged);
   }
 
   @override
   void dispose() {
+    widget.controller?.removeListener(_onControllerChanged);
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
   }
 
+  void _onControllerChanged() {
+    if (widget.controller != null && mounted) {
+      final newDate = widget.controller!.currentDate;
+      if (_currentDate != newDate) {
+        _scrollToDate(newDate);
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(SingleLineCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Handle controller changes
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.removeListener(_onControllerChanged);
+      widget.controller?.addListener(_onControllerChanged);
+
+      if (widget.controller != null) {
+        _scrollToDate(widget.controller!.currentDate);
+      }
+    }
+  }
+
   // MARK: - Initialization Methods
 
   void _initializeCalendar() {
-    _currentDate = widget.initialDate;
+    _currentDate = widget.controller?.currentDate ?? widget.initialDate;
     _initializeSelectedDate();
     _initializeDateRange();
     _initializeLocalization();
@@ -549,7 +580,12 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   void _onDateTap(CalendarDate calendarDate) {
-    _scrollToDate(calendarDate.date);
+    // Update controller if provided
+    if (widget.controller != null) {
+      widget.controller!.changeDate(calendarDate.date);
+    } else {
+      _scrollToDate(calendarDate.date);
+    }
   }
 
   // MARK: - Gesture Handling
@@ -617,6 +653,11 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
         // Check and load more dates after snap animation completes
         _checkAndLoadMoreDates(nearestIndex);
 
+        // Update controller if provided
+        if (widget.controller != null) {
+          widget.controller!.changeDate(_selectedDate.date);
+        }
+
         // Call onDateSelected after snap animation and state update completes
         widget.onDateSelected?.call(_selectedDate.date);
       }
@@ -655,7 +696,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     final fullDateText = dateText + additionalText;
 
     if (widget.headerBuilder != null) {
-      return widget.headerBuilder!(fullDateText);
+      return widget.headerBuilder!(displayDate);
     }
 
     return CalendarHeader(dateText: fullDateText);
