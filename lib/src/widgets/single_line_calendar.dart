@@ -381,6 +381,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
           _isScrolling = false;
         });
 
+        // Check and load more dates after scroll animation completes
+        _checkAndLoadMoreDates(index);
+
         // Call onDateSelected after programmatic scroll completes
         widget.onDateSelected?.call(_selectedDate.date);
       }
@@ -526,6 +529,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
         _isPanGestureActive = false;
         _userScrollInProgress = false;
         _pendingCallbackAfterScroll = false;
+
+        // Check and load more dates after snap animation completes
+        _checkAndLoadMoreDates(nearestIndex);
 
         // Call onDateSelected after snap animation and state update completes
         widget.onDateSelected?.call(_selectedDate.date);
