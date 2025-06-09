@@ -71,6 +71,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
   int _currentPageIndex = 0;
+  bool _isScrolling = false;
 
   @override
   void initState() {
@@ -176,16 +177,26 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
     setState(() {
       _currentPageIndex = index;
+      _isScrolling = animate;
     });
 
     if (animate) {
-      _pageController.animateToPage(
-        index,
-        duration: _CalendarConstants.animationDuration,
-        curve: Curves.easeInOut,
-      );
+      _pageController
+          .animateToPage(
+            index,
+            duration: _CalendarConstants.animationDuration,
+            curve: Curves.easeInOut,
+          )
+          .then((_) {
+            setState(() {
+              _isScrolling = false;
+            });
+            // 스크롤 완료 후 최종 선택 상태 업데이트
+            _updateSelectedDate(index);
+          });
     } else {
       _pageController.jumpToPage(index);
+      _updateSelectedDate(index);
     }
   }
 
@@ -360,7 +371,16 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
   void _handlePageChanged(int index) {
     if (index != _currentPageIndex) {
-      _updateSelectedDate(index);
+      // 스크롤 중이 아닐 때만 선택 상태 업데이트
+      if (!_isScrolling) {
+        _updateSelectedDate(index);
+      } else {
+        // 스크롤 중에는 인덱스만 업데이트
+        setState(() {
+          _currentPageIndex = index;
+          _selectedDate = _days[index];
+        });
+      }
       _checkAndLoadMoreDates(index);
     }
   }
@@ -414,8 +434,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   void _onDateTap(CalendarDate calendarDate) {
-    final index = _findDateIndex(calendarDate.date);
-    _updateSelectedDate(index);
     _scrollToDate(calendarDate.date);
   }
 }
