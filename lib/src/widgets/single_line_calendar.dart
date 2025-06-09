@@ -191,12 +191,13 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
             setState(() {
               _isScrolling = false;
             });
-            // 스크롤 완료 후 최종 선택 상태 업데이트
-            _updateSelectedDate(index);
+            // 스크롤 완료 후 콜백 호출
+            widget.onDateSelected?.call(_days[index].date);
           });
     } else {
       _pageController.jumpToPage(index);
-      _updateSelectedDate(index);
+      // jumpToPage는 즉시 실행되므로 바로 콜백 호출
+      widget.onDateSelected?.call(_days[index].date);
     }
   }
 
@@ -337,12 +338,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       child: Container(
         width: itemSize,
         height: itemSize,
-        constraints: BoxConstraints(
-          minWidth: 30,
-          minHeight: 30,
-          maxWidth: widget.itemWidth,
-          maxHeight: widget.itemWidth,
-        ),
         decoration: BoxDecoration(
           color: isSelected
               ? _CalendarConstants.selectedBackgroundColor
@@ -371,16 +366,17 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
 
   void _handlePageChanged(int index) {
     if (index != _currentPageIndex) {
-      // 스크롤 중이 아닐 때만 선택 상태 업데이트
+      // 항상 인덱스와 선택된 날짜 업데이트
+      setState(() {
+        _currentPageIndex = index;
+        _selectedDate = _days[index];
+      });
+
+      // 스크롤 중이 아닐 때만 콜백 호출
       if (!_isScrolling) {
-        _updateSelectedDate(index);
-      } else {
-        // 스크롤 중에는 인덱스만 업데이트
-        setState(() {
-          _currentPageIndex = index;
-          _selectedDate = _days[index];
-        });
+        widget.onDateSelected?.call(_days[index].date);
       }
+
       _checkAndLoadMoreDates(index);
     }
   }
@@ -423,14 +419,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _pageController.jumpToPage(_currentPageIndex);
     });
-  }
-
-  void _updateSelectedDate(int index) {
-    setState(() {
-      _currentPageIndex = index;
-      _selectedDate = _days[index];
-    });
-    widget.onDateSelected?.call(_days[index].date);
   }
 
   void _onDateTap(CalendarDate calendarDate) {
