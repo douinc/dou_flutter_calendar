@@ -6,7 +6,6 @@ import 'dart:async';
 
 // Constants for better maintainability
 class _CalendarConstants {
-  static const double defaultHeight = 60.0;
   static const double defaultDayWidth = 50.0;
   static const double dateSpacing = 4;
   static const double weekdayPadding = 6.0;
@@ -43,8 +42,7 @@ class SingleLineCalendar extends StatefulWidget {
   final Function(DateTime)? onDateSelected;
   final List<CalendarDate>? initialSelectedDates;
   final List<CalendarDate>? days;
-  final double height;
-  final double itemWidth;
+  final double dayWidth;
   final CalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
@@ -57,8 +55,7 @@ class SingleLineCalendar extends StatefulWidget {
     this.onDateSelected,
     this.initialSelectedDates,
     this.days,
-    this.height = _CalendarConstants.defaultHeight,
-    this.itemWidth = _CalendarConstants.defaultDayWidth,
+    this.dayWidth = _CalendarConstants.defaultDayWidth,
     this.style,
     this.headerDateFormat,
     this.locale,
@@ -163,8 +160,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
         _CalendarConstants.weekdayPadding * 2 +
         _CalendarConstants.weekdayPaddingAdjustment;
 
-    final dayItemHeight =
-        widget.itemWidth * _CalendarConstants.dayItemSizeRatio;
+    final dayItemHeight = widget.dayWidth * _CalendarConstants.dayItemSizeRatio;
 
     _calculatedHeight =
         weekdayHeight +
@@ -253,7 +249,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   double _getItemTotalWidth() {
     final dateSpacing =
         widget.style?.dateSpacing ?? _CalendarConstants.dateSpacing;
-    return widget.itemWidth + (dateSpacing * 2);
+    return widget.dayWidth + (dateSpacing * 2);
   }
 
   /// Calculate the target date index based on scroll position and sensitivity threshold
@@ -719,7 +715,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
     return RepaintBoundary(
       child: Container(
-        width: widget.itemWidth + (dateSpacing * 2),
+        width: widget.dayWidth + (dateSpacing * 2),
         padding: EdgeInsets.symmetric(horizontal: dateSpacing),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -782,7 +778,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   Widget _buildDefaultDayItem(CalendarDate calendarDate, bool isSelected) {
-    final itemSize = widget.itemWidth * _CalendarConstants.dayItemSizeRatio;
+    final itemSize = widget.dayWidth * _CalendarConstants.dayItemSizeRatio;
 
     return GestureDetector(
       onTap: () => _onDateTap(calendarDate),
