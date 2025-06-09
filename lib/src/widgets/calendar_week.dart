@@ -41,7 +41,7 @@ class CalendarWeek extends StatelessWidget {
               ) ??
               false;
 
-          return Expanded(
+          return Flexible(
             child: CalendarDay(
               date: day,
               currentMonth: currentMonth,
