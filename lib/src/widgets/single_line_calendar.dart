@@ -211,16 +211,13 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   Widget _buildCalendarBody() {
-    return GestureDetector(
-      onHorizontalDragEnd: _handleHorizontalDrag,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildTriangleIndicator(),
-          SizedBox(height: _CalendarConstants.topSpacing),
-          _buildDateCarousel(),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildTriangleIndicator(),
+        SizedBox(height: _CalendarConstants.topSpacing),
+        _buildDateCarousel(),
+      ],
     );
   }
 
@@ -361,18 +358,51 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     );
   }
 
-  void _handleHorizontalDrag(DragEndDetails details) {
-    if (details.primaryVelocity! > 0) {
-      _moveToPreviousDay();
-    } else if (details.primaryVelocity! < 0) {
-      _moveToNextDay();
-    }
-  }
-
   void _handlePageChanged(int index) {
     if (index != _currentPageIndex) {
       _updateSelectedDate(index);
+      _checkAndLoadMoreDates(index);
     }
+  }
+
+  void _checkAndLoadMoreDates(int index) {
+    // Load more dates when approaching the end
+    if (index >= _days.length - _CalendarConstants.loadThreshold) {
+      _expandDaysForward();
+    }
+
+    // Load more dates when approaching the beginning
+    if (index <= _CalendarConstants.loadThreshold) {
+      _expandDaysBackward();
+    }
+  }
+
+  void _expandDaysForward() {
+    setState(() {
+      _endDate = _endDate.add(
+        const Duration(days: _CalendarConstants.loadDaysCount),
+      );
+      _days = _getDaysInRange(_startDate, _endDate);
+    });
+  }
+
+  void _expandDaysBackward() {
+    final newStartDate = _startDate.subtract(
+      const Duration(days: _CalendarConstants.loadDaysCount),
+    );
+    final newDays = _getDaysInRange(newStartDate, _endDate);
+    final addedDaysCount = newDays.length - _days.length;
+
+    setState(() {
+      _startDate = newStartDate;
+      _days = newDays;
+      _currentPageIndex += addedDaysCount;
+    });
+
+    // PageController의 페이지도 업데이트
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pageController.jumpToPage(_currentPageIndex);
+    });
   }
 
   void _updateSelectedDate(int index) {
@@ -384,64 +414,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   void _onDateTap(CalendarDate calendarDate) {
+    final index = _findDateIndex(calendarDate.date);
+    _updateSelectedDate(index);
     _scrollToDate(calendarDate.date);
-  }
-
-  void _moveToNextDay() {
-    if (_currentPageIndex >= _days.length - 1) return;
-
-    _expandDaysIfNeeded();
-    _navigateToNextDay();
-  }
-
-  void _moveToPreviousDay() {
-    if (_currentPageIndex <= 0) return;
-
-    _prependDaysIfNeeded();
-    _navigateToPreviousDay();
-  }
-
-  void _expandDaysIfNeeded() {
-    if (_currentPageIndex >= _days.length - _CalendarConstants.loadThreshold) {
-      setState(() {
-        _endDate = _endDate.add(
-          const Duration(days: _CalendarConstants.loadDaysCount),
-        );
-        _days = _getDaysInRange(_startDate, _endDate);
-      });
-    }
-  }
-
-  void _prependDaysIfNeeded() {
-    if (_currentPageIndex <= _CalendarConstants.loadThreshold) {
-      final newStartDate = _startDate.subtract(
-        const Duration(days: _CalendarConstants.loadDaysCount),
-      );
-      final newDays = _getDaysInRange(newStartDate, _endDate);
-      final addedDaysCount = newDays.length - _days.length;
-
-      setState(() {
-        _startDate = newStartDate;
-        _days = newDays;
-        _currentPageIndex += addedDaysCount;
-      });
-    }
-  }
-
-  void _navigateToNextDay() {
-    _updateSelectedDate(_currentPageIndex + 1);
-    _pageController.nextPage(
-      duration: _CalendarConstants.animationDuration,
-      curve: Curves.easeInOut,
-    );
-  }
-
-  void _navigateToPreviousDay() {
-    _updateSelectedDate(_currentPageIndex - 1);
-    _pageController.previousPage(
-      duration: _CalendarConstants.animationDuration,
-      curve: Curves.easeInOut,
-    );
   }
 }
 
