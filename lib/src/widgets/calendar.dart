@@ -16,7 +16,7 @@ class Calendar extends StatefulWidget {
   final String? headerDateFormat;
   final CalendarViewType viewType;
   final Locale? locale;
-  final Widget Function(CalendarDate calendarDate)? dayItemBuilder;
+  final Widget Function(CalendarDate calendarDate)? dayBuilder;
 
   const Calendar({
     super.key,
@@ -30,7 +30,7 @@ class Calendar extends StatefulWidget {
     this.headerDateFormat,
     this.viewType = CalendarViewType.grid,
     this.locale,
-    this.dayItemBuilder,
+    this.dayBuilder,
   });
 
   @override
@@ -57,7 +57,7 @@ class _CalendarState extends State<Calendar> {
         style: widget.style,
         headerDateFormat: widget.headerDateFormat,
         locale: widget.locale,
-        dayItemBuilder: widget.dayItemBuilder,
+        dayItemBuilder: widget.dayBuilder,
       );
     }
 
@@ -71,7 +71,7 @@ class _CalendarState extends State<Calendar> {
       style: widget.style,
       headerDateFormat: widget.headerDateFormat,
       locale: widget.locale,
-      dayItemBuilder: widget.dayItemBuilder,
+      dayItemBuilder: widget.dayBuilder,
     );
   }
 }
