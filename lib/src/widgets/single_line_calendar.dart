@@ -7,7 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 class _CalendarConstants {
   static const double defaultHeight = 60.0;
   static const double defaultItemWidth = 50.0;
-  static const double viewportFraction = 0.15;
+  static const double viewportFraction = 0.13;
   static const double horizontalMargin = 2.5;
   static const double weekdayPadding = 6.0;
   static const double itemSpacing = 4.0;
@@ -172,33 +172,27 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     super.dispose();
   }
 
-  void _scrollToDate(DateTime targetDate, {bool animate = true}) {
+  void _scrollToDate(DateTime targetDate) {
     final index = _findDateIndex(targetDate);
 
     setState(() {
       _currentPageIndex = index;
-      _isScrolling = animate;
+      _isScrolling = true;
     });
 
-    if (animate) {
-      _pageController
-          .animateToPage(
-            index,
-            duration: _CalendarConstants.animationDuration,
-            curve: Curves.easeInOut,
-          )
-          .then((_) {
-            setState(() {
-              _isScrolling = false;
-            });
-            // 스크롤 완료 후 콜백 호출
-            widget.onDateSelected?.call(_days[index].date);
+    _pageController
+        .animateToPage(
+          index,
+          duration: _CalendarConstants.animationDuration,
+          curve: Curves.easeInOut,
+        )
+        .then((_) {
+          setState(() {
+            _isScrolling = false;
           });
-    } else {
-      _pageController.jumpToPage(index);
-      // jumpToPage는 즉시 실행되므로 바로 콜백 호출
-      widget.onDateSelected?.call(_days[index].date);
-    }
+          // 스크롤 완료 후 콜백 호출
+          widget.onDateSelected?.call(_days[index].date);
+        });
   }
 
   @override
