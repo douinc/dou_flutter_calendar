@@ -2,7 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'dart:developer';
+
+// Constants for better maintainability
+class _CalendarConstants {
+  static const double defaultHeight = 60.0;
+  static const double defaultItemWidth = 50.0;
+  static const double viewportFraction = 0.15;
+  static const double horizontalMargin = 2.5;
+  static const double weekdayPadding = 6.0;
+  static const double itemSpacing = 4.0;
+  static const double bottomPadding = 8.0;
+  static const double triangleWidth = 20.0;
+  static const double triangleHeight = 10.0;
+  static const double separatorHeight = 11.0;
+  static const double topSpacing = 10.0;
+  static const int loadThreshold = 10;
+  static const int loadDaysCount = 30;
+  static const Duration animationDuration = Duration(milliseconds: 300);
+
+  // Colors
+  static const Color selectedBackgroundColor = Colors.black;
+  static const Color selectedTextColor = Colors.white;
+  static const Color unselectedTextColor = Color(0xFF71717A);
+  static const Color defaultBackgroundColor = Colors.transparent;
+}
 
 class SingleLineCalendar extends StatefulWidget {
   final CalendarViewType viewType;
@@ -25,8 +48,8 @@ class SingleLineCalendar extends StatefulWidget {
     this.onDateSelected,
     this.initialSelectedDates,
     this.days,
-    this.height = 60,
-    this.itemWidth = 50,
+    this.height = _CalendarConstants.defaultHeight,
+    this.itemWidth = _CalendarConstants.defaultItemWidth,
     this.style,
     this.headerDateFormat,
     this.locale,
@@ -39,9 +62,12 @@ class SingleLineCalendar extends StatefulWidget {
 
 class _SingleLineCalendarState extends State<SingleLineCalendar> {
   late DateTime _currentDate;
-  late List<CalendarDate> _selectedDates;
+  late CalendarDate _selectedDate;
   late PageController _pageController;
   late List<CalendarDate> _days;
+  late List<String> _weekdayNames;
+  late double _calculatedHeight;
+
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
   int _currentPageIndex = 0;
@@ -49,37 +75,71 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   @override
   void initState() {
     super.initState();
+    _initializeCalendar();
+  }
+
+  void _initializeCalendar() {
     _currentDate = widget.initialDate;
-    _selectedDates = widget.initialSelectedDates ?? [];
+    final initialDates = widget.initialSelectedDates ?? [];
+    _selectedDate = initialDates.isNotEmpty
+        ? initialDates.first
+        : CalendarDate(date: _currentDate);
+
     _initializeDates();
+    _initializeLocalization();
+    _initializeWeekdayNames();
+    _calculateHeight();
+    _initializeSelectedDates();
+    _initializePageController();
 
-    if (widget.locale != null) {
-      initializeDateFormatting(widget.locale!.languageCode);
-    }
-
-    if (_selectedDates.isEmpty) {
-      _selectedDates = [CalendarDate(date: _currentDate)];
-    }
-
-    _currentPageIndex = _days.indexWhere(
-      (day) => _isSameDate(day.date, _selectedDates.first.date),
-    );
-    if (_currentPageIndex == -1) _currentPageIndex = 0;
-
-    _pageController = PageController(
-      initialPage: _currentPageIndex,
-      viewportFraction: 0.15,
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onDateSelected?.call(_selectedDates.first.date);
-    });
+    _scheduleInitialCallback();
   }
 
   void _initializeDates() {
     _startDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
     _endDate = DateTime(_currentDate.year, _currentDate.month + 1, 0);
     _days = _getDaysInRange(_startDate, _endDate);
+  }
+
+  void _initializeLocalization() {
+    if (widget.locale != null) {
+      initializeDateFormatting(widget.locale!.languageCode);
+    }
+  }
+
+  void _initializeWeekdayNames() {
+    _weekdayNames = DateFormat.EEEE().dateSymbols.STANDALONENARROWWEEKDAYS;
+  }
+
+  void _calculateHeight() {
+    final weekdayHeight =
+        (widget.style?.weekdayTextStyle?.fontSize ?? 10) +
+        _CalendarConstants.weekdayPadding * 2 +
+        6;
+    final dayItemHeight = widget.itemWidth * 0.7;
+
+    _calculatedHeight =
+        weekdayHeight +
+        _CalendarConstants.itemSpacing +
+        dayItemHeight +
+        _CalendarConstants.bottomPadding;
+  }
+
+  void _initializeSelectedDates() {
+    _currentPageIndex = _findDateIndex(_selectedDate.date);
+  }
+
+  void _initializePageController() {
+    _pageController = PageController(
+      initialPage: _currentPageIndex,
+      viewportFraction: _CalendarConstants.viewportFraction,
+    );
+  }
+
+  void _scheduleInitialCallback() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onDateSelected?.call(_selectedDate.date);
+    });
   }
 
   List<CalendarDate> _getDaysInRange(DateTime start, DateTime end) {
@@ -100,22 +160,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
         date1.day == date2.day;
   }
 
-  // 동적 높이 계산
-  double _calculateDynamicHeight() {
-    // 요일 텍스트 높이 + 패딩
-    final weekdayHeight =
-        (widget.style?.weekdayTextStyle?.fontSize ?? 10) + 12 + 6; // 텍스트 + 패딩
-
-    // 날짜 아이템 높이
-    final dayItemHeight = widget.itemWidth * 0.7;
-
-    // 사이 간격
-    final spacing = 4.0;
-
-    // 여유 공간 (하단 패딩)
-    final bottomPadding = 8.0;
-
-    return weekdayHeight + spacing + dayItemHeight + bottomPadding;
+  int _findDateIndex(DateTime targetDate) {
+    final index = _days.indexWhere((day) => _isSameDate(day.date, targetDate));
+    return index == -1 ? 0 : index;
   }
 
   @override
@@ -125,141 +172,145 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
   }
 
   void _scrollToDate(DateTime targetDate, {bool animate = true}) {
-    final index = _days.indexWhere((day) => _isSameDate(day.date, targetDate));
+    final index = _findDateIndex(targetDate);
 
-    if (index != -1) {
-      setState(() {
-        _currentPageIndex = index;
-      });
-      if (animate) {
-        _pageController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } else {
-        _pageController.jumpToPage(index);
-      }
+    setState(() {
+      _currentPageIndex = index;
+    });
+
+    if (animate) {
+      _pageController.animateToPage(
+        index,
+        duration: _CalendarConstants.animationDuration,
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _pageController.jumpToPage(index);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayDate = _selectedDates.isNotEmpty
-        ? _selectedDates.first.date
-        : _currentDate;
+    final displayDate = _selectedDate.date;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        CalendarHeader(
-          currentDate: _currentDate,
-          selectedDate: displayDate,
-          dateFormat: widget.headerDateFormat,
-          showNavigation: false,
-          isSingleLine: true,
-          locale: widget.locale,
-        ),
-        GestureDetector(
-          onHorizontalDragEnd: (details) {
-            if (details.primaryVelocity! > 0) {
-              _moveToPreviousDay();
-            } else if (details.primaryVelocity! < 0) {
-              _moveToNextDay();
-            }
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                height: 11,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: CustomPaint(
-                        size: const Size(20, 10),
-                        painter: TrianglePainter(),
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(height: 1, color: Colors.grey[300]),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 10),
-              SizedBox(
-                height: _calculateDynamicHeight(),
-                child: PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    log(_currentPageIndex.toString());
-                    if (index != _currentPageIndex) {
-                      setState(() {
-                        _currentPageIndex = index;
-                        _selectedDates = [_days[index]];
-                      });
-                      widget.onDateSelected?.call(_days[index].date);
-                    }
-                  },
-                  itemCount: _days.length,
-                  itemBuilder: (context, index) {
-                    final day = _days[index];
-                    final weekday = day.date.weekday;
-                    final weekdays =
-                        DateFormat.EEEE().dateSymbols.STANDALONENARROWWEEKDAYS;
-                    final isSelected = index == _currentPageIndex;
-
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isSelected
-                                  ? Colors.black
-                                  : Colors.transparent,
-                            ),
-                            child: FittedBox(
-                              child: Text(
-                                weekdays[weekday - 1],
-                                style:
-                                    (widget.style?.weekdayTextStyle ??
-                                            const TextStyle(fontSize: 10))
-                                        .copyWith(
-                                          color: isSelected
-                                              ? Colors.white
-                                              : Color(0xFF71717A),
-                                        ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          // 날짜 표시
-                          Flexible(child: _buildDayItem(day, isSelected)),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+      children: [_buildHeader(displayDate), _buildCalendarBody()],
     );
   }
 
-  Widget _buildDayItem(CalendarDate calendarDate, bool isSelected) {
-    final date = calendarDate.date;
+  Widget _buildHeader(DateTime displayDate) {
+    return CalendarHeader(
+      currentDate: _currentDate,
+      selectedDate: displayDate,
+      dateFormat: widget.headerDateFormat,
+      showNavigation: false,
+      isSingleLine: true,
+      locale: widget.locale,
+    );
+  }
 
+  Widget _buildCalendarBody() {
+    return GestureDetector(
+      onHorizontalDragEnd: _handleHorizontalDrag,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildTriangleIndicator(),
+          SizedBox(height: _CalendarConstants.topSpacing),
+          _buildDateCarousel(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTriangleIndicator() {
+    return SizedBox(
+      width: double.infinity,
+      height: _CalendarConstants.separatorHeight,
+      child: Stack(
+        children: [
+          Center(
+            child: CustomPaint(
+              size: const Size(
+                _CalendarConstants.triangleWidth,
+                _CalendarConstants.triangleHeight,
+              ),
+              painter: _TrianglePainter(),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(height: 1, color: Colors.grey[300]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateCarousel() {
+    return SizedBox(
+      height: _calculatedHeight,
+      child: PageView.builder(
+        controller: _pageController,
+        onPageChanged: _handlePageChanged,
+        itemCount: _days.length,
+        itemBuilder: _buildDateItem,
+      ),
+    );
+  }
+
+  Widget _buildDateItem(BuildContext context, int index) {
+    final day = _days[index];
+    final isSelected = index == _currentPageIndex;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: _CalendarConstants.horizontalMargin,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildWeekdayLabel(day.date, isSelected),
+          const SizedBox(height: _CalendarConstants.itemSpacing),
+          Flexible(child: _buildDayItem(day, isSelected)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeekdayLabel(DateTime date, bool isSelected) {
+    final weekday = date.weekday;
+
+    return Container(
+      padding: const EdgeInsets.all(_CalendarConstants.weekdayPadding),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isSelected
+            ? _CalendarConstants.selectedBackgroundColor
+            : _CalendarConstants.defaultBackgroundColor,
+      ),
+      child: FittedBox(
+        child: Text(
+          _weekdayNames[weekday - 1],
+          style: _getWeekdayTextStyle(isSelected),
+        ),
+      ),
+    );
+  }
+
+  TextStyle _getWeekdayTextStyle(bool isSelected) {
+    return (widget.style?.weekdayTextStyle ?? const TextStyle(fontSize: 10))
+        .copyWith(
+          color: isSelected
+              ? _CalendarConstants.selectedTextColor
+              : _CalendarConstants.unselectedTextColor,
+        );
+  }
+
+  Widget _buildDayItem(CalendarDate calendarDate, bool isSelected) {
     if (widget.dayItemBuilder != null) {
       return GestureDetector(
         onTap: () => _onDateTap(calendarDate),
@@ -267,11 +318,17 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
       );
     }
 
+    return _buildDefaultDayItem(calendarDate, isSelected);
+  }
+
+  Widget _buildDefaultDayItem(CalendarDate calendarDate, bool isSelected) {
+    final itemSize = widget.itemWidth * 0.7;
+
     return GestureDetector(
       onTap: () => _onDateTap(calendarDate),
       child: Container(
-        width: widget.itemWidth * 0.7,
-        height: widget.itemWidth * 0.7,
+        width: itemSize,
+        height: itemSize,
         constraints: BoxConstraints(
           minWidth: 30,
           minHeight: 30,
@@ -279,18 +336,16 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
           maxHeight: widget.itemWidth,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.black : Colors.grey.withAlpha(26),
+          color: isSelected
+              ? _CalendarConstants.selectedBackgroundColor
+              : Colors.grey.withAlpha(26),
           shape: BoxShape.circle,
         ),
         child: Center(
           child: FittedBox(
             child: Text(
-              date.day.toString(),
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 14,
-              ),
+              calendarDate.date.day.toString(),
+              style: _getDayTextStyle(isSelected),
             ),
           ),
         ),
@@ -298,65 +353,103 @@ class _SingleLineCalendarState extends State<SingleLineCalendar> {
     );
   }
 
+  TextStyle _getDayTextStyle(bool isSelected) {
+    return TextStyle(
+      color: isSelected ? _CalendarConstants.selectedTextColor : Colors.black,
+      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      fontSize: 14,
+    );
+  }
+
+  void _handleHorizontalDrag(DragEndDetails details) {
+    if (details.primaryVelocity! > 0) {
+      _moveToPreviousDay();
+    } else if (details.primaryVelocity! < 0) {
+      _moveToNextDay();
+    }
+  }
+
+  void _handlePageChanged(int index) {
+    if (index != _currentPageIndex) {
+      _updateSelectedDate(index);
+    }
+  }
+
+  void _updateSelectedDate(int index) {
+    setState(() {
+      _currentPageIndex = index;
+      _selectedDate = _days[index];
+    });
+    widget.onDateSelected?.call(_days[index].date);
+  }
+
   void _onDateTap(CalendarDate calendarDate) {
     _scrollToDate(calendarDate.date);
   }
 
   void _moveToNextDay() {
-    if (_currentPageIndex < _days.length - 1) {
-      if (_currentPageIndex >= _days.length - 10) {
-        setState(() {
-          _endDate = _endDate.add(const Duration(days: 30));
-          _days = _getDaysInRange(_startDate, _endDate);
-        });
-      }
+    if (_currentPageIndex >= _days.length - 1) return;
 
-      setState(() {
-        _currentPageIndex++;
-        _selectedDates = [_days[_currentPageIndex]];
-      });
-      widget.onDateSelected?.call(_days[_currentPageIndex].date);
-
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+    _expandDaysIfNeeded();
+    _navigateToNextDay();
   }
 
   void _moveToPreviousDay() {
-    if (_currentPageIndex > 0) {
-      if (_currentPageIndex <= 10) {
-        final newStartDate = _startDate.subtract(const Duration(days: 30));
-        final newDays = _getDaysInRange(newStartDate, _endDate);
-        final addedDaysCount = newDays.length - _days.length;
+    if (_currentPageIndex <= 0) return;
 
-        setState(() {
-          _startDate = newStartDate;
-          _days = newDays;
-          _currentPageIndex += addedDaysCount;
-        });
-      }
+    _prependDaysIfNeeded();
+    _navigateToPreviousDay();
+  }
+
+  void _expandDaysIfNeeded() {
+    if (_currentPageIndex >= _days.length - _CalendarConstants.loadThreshold) {
+      setState(() {
+        _endDate = _endDate.add(
+          const Duration(days: _CalendarConstants.loadDaysCount),
+        );
+        _days = _getDaysInRange(_startDate, _endDate);
+      });
+    }
+  }
+
+  void _prependDaysIfNeeded() {
+    if (_currentPageIndex <= _CalendarConstants.loadThreshold) {
+      final newStartDate = _startDate.subtract(
+        const Duration(days: _CalendarConstants.loadDaysCount),
+      );
+      final newDays = _getDaysInRange(newStartDate, _endDate);
+      final addedDaysCount = newDays.length - _days.length;
 
       setState(() {
-        _currentPageIndex--;
-        _selectedDates = [_days[_currentPageIndex]];
+        _startDate = newStartDate;
+        _days = newDays;
+        _currentPageIndex += addedDaysCount;
       });
-      widget.onDateSelected?.call(_days[_currentPageIndex].date);
-
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
     }
+  }
+
+  void _navigateToNextDay() {
+    _updateSelectedDate(_currentPageIndex + 1);
+    _pageController.nextPage(
+      duration: _CalendarConstants.animationDuration,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _navigateToPreviousDay() {
+    _updateSelectedDate(_currentPageIndex - 1);
+    _pageController.previousPage(
+      duration: _CalendarConstants.animationDuration,
+      curve: Curves.easeInOut,
+    );
   }
 }
 
-class TrianglePainter extends CustomPainter {
+class _TrianglePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black
+      ..color = _CalendarConstants.selectedBackgroundColor
       ..style = PaintingStyle.fill;
 
     final path = Path()
