@@ -178,8 +178,17 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   void _initializeDateRange() {
-    _startDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
-    _endDate = DateTime(_currentDate.year, _currentDate.month + 1, 0);
+    _startDate = DateTime(
+      _currentDate.year,
+      _currentDate.month - 1,
+      _currentDate.day,
+    );
+    _endDate = DateTime(
+      _currentDate.year,
+      _currentDate.month + 1,
+      _currentDate.day,
+    );
+
     _generateDaysInRange();
   }
 
@@ -387,12 +396,20 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     bool rangeChanged = false;
 
     if (targetDate.isBefore(_startDate)) {
-      _startDate = DateTime(targetDate.year, targetDate.month - 1, 1);
+      _startDate = DateTime(
+        targetDate.year,
+        targetDate.month - 1,
+        targetDate.day,
+      );
       rangeChanged = true;
     }
 
     if (targetDate.isAfter(_endDate)) {
-      _endDate = DateTime(targetDate.year, targetDate.month + 1, 0);
+      _endDate = DateTime(
+        targetDate.year,
+        targetDate.month + 2,
+        targetDate.day,
+      );
       rangeChanged = true;
     }
 
