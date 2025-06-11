@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
-import '../controllers/calendar_controller.dart';
-import '../models/calendar_date.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'dart:async';

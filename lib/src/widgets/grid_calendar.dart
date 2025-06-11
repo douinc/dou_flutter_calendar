@@ -21,6 +21,7 @@ class GridCalendar extends StatefulWidget {
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
   final Widget Function(DateTime currentDate)? headerBuilder;
   final CalendarController? controller;
+  final bool enableSwipe;
 
   const GridCalendar({
     super.key,
@@ -36,6 +37,7 @@ class GridCalendar extends StatefulWidget {
     this.dayBuilder,
     this.headerBuilder,
     this.controller,
+    this.enableSwipe = true,
   });
 
   @override
@@ -209,15 +211,28 @@ class _GridCalendarState extends State<GridCalendar> {
     return Column(
       children: [
         _buildHeader(),
-        CalendarMonth(
-          days: _days,
-          currentMonth: _currentDate,
-          onDateSelected: _onDateSelected,
-          selectedDates: _selectedDates,
-          multiSelect: widget.multiSelect,
-          style: widget.style,
-          locale: widget.locale,
-          dayItemBuilder: widget.dayBuilder,
+        GestureDetector(
+          onHorizontalDragEnd: widget.enableSwipe
+              ? (DragEndDetails details) {
+                  if (details.primaryVelocity == null) return;
+
+                  if (details.primaryVelocity! > 0) {
+                    _onPreviousMonth();
+                  } else if (details.primaryVelocity! < 0) {
+                    _onNextMonth();
+                  }
+                }
+              : null,
+          child: CalendarMonth(
+            days: _days,
+            currentMonth: _currentDate,
+            onDateSelected: _onDateSelected,
+            selectedDates: _selectedDates,
+            multiSelect: widget.multiSelect,
+            style: widget.style,
+            locale: widget.locale,
+            dayItemBuilder: widget.dayBuilder,
+          ),
         ),
       ],
     );

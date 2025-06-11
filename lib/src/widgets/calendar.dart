@@ -21,6 +21,7 @@ class Calendar extends StatefulWidget {
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
   final Widget Function(DateTime currentDate)? headerBuilder;
   final CalendarController? controller;
+  final bool enableSwipe;
 
   const Calendar({
     super.key,
@@ -38,6 +39,7 @@ class Calendar extends StatefulWidget {
     this.dayBuilder,
     this.headerBuilder,
     this.controller,
+    this.enableSwipe = true,
   });
 
   @override
@@ -112,6 +114,7 @@ class _CalendarState extends State<Calendar> {
       dayBuilder: widget.dayBuilder,
       headerBuilder: widget.headerBuilder,
       controller: _controller,
+      enableSwipe: widget.enableSwipe,
     );
   }
 }
