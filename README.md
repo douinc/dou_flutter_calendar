@@ -84,7 +84,6 @@ Calendar(
 Calendar(
   viewType: CalendarViewType.singleLine,
   initialDate: DateTime.now(),
-  dayWidth: 50.0, // Custom day width
   onDateSelected: (DateTime date) {
     print('Selected date: $date');
   },
