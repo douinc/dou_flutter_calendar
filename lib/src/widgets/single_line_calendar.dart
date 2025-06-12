@@ -85,6 +85,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
   final Map<String, int> _dateIndexMap = {};
 
+  bool _isScrollAnimating = false;
+
   @override
   void initState() {
     super.initState();
@@ -294,7 +296,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   void _scrollToDate(DateTime targetDate, {bool callCallback = true}) {
-    if (!_isInitialized) return;
+    if (!_isInitialized || _isScrollAnimating) return;
 
     _ensureDateInRange(targetDate);
     final index = _findDateIndex(targetDate);
@@ -318,6 +320,12 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
   Future<void> _scrollToDateAtIndex(int index, {bool animate = true}) async {
     if (_pageController == null) return;
+    if (_isScrollAnimating) return;
+    if (mounted) {
+      setState(() {
+        _isScrollAnimating = true;
+      });
+    }
 
     if (animate) {
       await _pageController!.animateToPage(
@@ -327,6 +335,12 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
       );
     } else {
       _pageController!.jumpToPage(index);
+    }
+
+    if (mounted) {
+      setState(() {
+        _isScrollAnimating = false;
+      });
     }
   }
 
@@ -379,6 +393,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   void _onDateTap(CalendarDate calendarDate) {
+    if (_isScrollAnimating) return;
+
     if (widget.controller != null) {
       widget.controller!.selectDate(calendarDate.date);
     } else {
@@ -517,12 +533,15 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   Widget _buildDateCarousel() {
     return SizedBox(
       height: _calculatedHeight,
-      child: PageView.builder(
-        controller: _pageController!,
-        pageSnapping: true,
-        onPageChanged: _onPageChanged,
-        itemCount: _days.length,
-        itemBuilder: (_, index) => _buildDateItem(context, index),
+      child: IgnorePointer(
+        ignoring: _isScrollAnimating,
+        child: PageView.builder(
+          controller: _pageController!,
+          pageSnapping: true,
+          onPageChanged: _onPageChanged,
+          itemCount: _days.length,
+          itemBuilder: (_, index) => _buildDateItem(context, index),
+        ),
       ),
     );
   }
