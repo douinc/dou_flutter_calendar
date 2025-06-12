@@ -18,15 +18,12 @@ class _CalendarConstants {
   static const int loadThreshold = 10;
   static const int loadDaysCount = 30;
   static const Duration animationDuration = Duration(milliseconds: 300);
-  static const double scrollSensitivity = 0.6; // Reduce scroll sensitivity
-  static const double selectionThreshold = 0.25; // Date selection sensitivity
 
   // Colors
   static const Color selectedBackgroundColor = Colors.black;
   static const Color selectedTextColor = Colors.white;
   static const Color unselectedTextColor = Color(0xFF71717A);
   static const Color defaultBackgroundColor = Colors.transparent;
-  static const Color separatorColor = Color(0xFFE5E5E5);
   static const Color dayItemBackgroundColor = Color(0x1A808080);
 
   // Text styles
@@ -74,49 +71,31 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     with TickerProviderStateMixin {
   late DateTime _currentDate;
   late CalendarDate _selectedDate;
-  late ScrollController _scrollController;
   late List<CalendarDate> _days;
   late List<String> _weekdayNames;
   late double _calculatedHeight;
-  late AnimationController _animationController;
+  PageController? _pageController;
 
-  // Date range management
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
 
-  // State management
   int _currentSelectedIndex = 0;
-  bool _isScrolling = false;
   bool _isInitialized = false;
-  bool _isProgrammaticScroll = false;
-  bool _isLoadingDates = false; // Add loading state for date expansion
+  bool _isLoadingDates = false;
 
-  // Gesture handling
-  double _startPanOffset = 0.0;
-  double _lastPanOffset = 0.0;
-  bool _isPanGestureActive = false;
-
-  // Scroll state detection
-  bool _userScrollInProgress = false;
-  bool _pendingCallbackAfterScroll = false;
-
-  // Performance optimization - date index mapping
   final Map<String, int> _dateIndexMap = {};
 
   @override
   void initState() {
     super.initState();
     _initializeCalendar();
-
-    // Listen to controller changes if provided
     widget.controller?.addListener(_onControllerChanged);
   }
 
   @override
   void dispose() {
     widget.controller?.removeListener(_onControllerChanged);
-    _scrollController.dispose();
-    _animationController.dispose();
+    _pageController?.dispose();
     super.dispose();
   }
 
@@ -127,13 +106,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
           widget.controller!.lastChangeType == CalendarChangeType.selection;
 
       if (_currentDate != newDate) {
-        if (isSelection) {
-          // For selection changes, scroll to date and trigger callbacks
-          _scrollToDate(newDate);
-        } else {
-          // For navigation changes, just scroll without triggering selection callbacks
-          _scrollToDateWithoutCallback(newDate);
-        }
+        _scrollToDate(newDate, callCallback: isSelection);
       }
     }
   }
@@ -142,7 +115,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   void didUpdateWidget(SingleLineCalendar oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Handle controller changes
     if (widget.controller != oldWidget.controller) {
       oldWidget.controller?.removeListener(_onControllerChanged);
       widget.controller?.addListener(_onControllerChanged);
@@ -153,29 +125,34 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     }
   }
 
-  // MARK: - Initialization Methods
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_pageController == null) {
+      final double dateSpacing =
+          widget.style?.dateSpacing ?? _CalendarConstants.dateSpacing;
+
+      final viewportFraction =
+          (widget.dayWidth + (dateSpacing * 2)) /
+          MediaQuery.of(context).size.width;
+
+      _pageController = PageController(
+        initialPage: _currentSelectedIndex,
+        viewportFraction: viewportFraction,
+      );
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _pageController != null) {
+          _scrollToDateAtIndex(_currentSelectedIndex, animate: false);
+        }
+      });
+    }
+  }
 
   void _initializeCalendar() {
     _currentDate = widget.controller?.currentDate ?? widget.initialDate;
-    _initializeSelectedDate();
-    _initializeDateRange();
-    _initializeLocalization();
-    _initializeWeekdayNames();
-    _calculateHeight();
-    _initializeScrollController();
-    _initializeAnimationController();
-    _scheduleInitialCallback();
-    _isInitialized = true;
-  }
 
-  void _initializeSelectedDate() {
-    final initialDates = widget.initialSelectedDates ?? [];
-    _selectedDate = initialDates.isNotEmpty
-        ? initialDates.first.copyWith(isSelected: true)
-        : CalendarDate(date: _currentDate, isSelected: true);
-  }
-
-  void _initializeDateRange() {
     _startDate = DateTime(
       _currentDate.year,
       _currentDate.month - 1,
@@ -186,23 +163,23 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
       _currentDate.month + 1,
       _currentDate.day,
     );
-
     _generateDaysInRange();
-  }
 
-  void _initializeLocalization() {
+    final initialDates = widget.initialSelectedDates ?? [];
+    _selectedDate = initialDates.isNotEmpty
+        ? initialDates.first.copyWith(isSelected: true)
+        : CalendarDate(date: _currentDate, isSelected: true);
+
+    _currentSelectedIndex = _findDateIndex(_selectedDate.date);
+
     if (widget.locale != null) {
       initializeDateFormatting(widget.locale!.languageCode);
     }
-  }
 
-  void _initializeWeekdayNames() {
     _weekdayNames = DateFormat.EEEE(
       widget.locale?.languageCode,
     ).dateSymbols.STANDALONENARROWWEEKDAYS;
-  }
 
-  void _calculateHeight() {
     final weekdayTextStyle = widget.style?.weekdayTextStyle;
     final weekdayHeight =
         (weekdayTextStyle?.fontSize ??
@@ -217,132 +194,33 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
         _CalendarConstants.weekdayToDateSpacing +
         dayItemHeight +
         _CalendarConstants.bottomPadding;
-  }
 
-  void _initializeScrollController() {
-    _currentSelectedIndex = _findDateIndex(_selectedDate.date);
-    _scrollController = ScrollController();
-
-    // Add listener to detect scroll position changes
-    _scrollController.addListener(_onScrollChanged);
-
-    // Schedule initial scroll to selected date
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _scrollController.hasClients) {
-        _scrollToDateAtIndex(_currentSelectedIndex, animate: false);
-      }
-    });
-  }
-
-  void _initializeAnimationController() {
-    _animationController = AnimationController(
-      duration: _CalendarConstants.animationDuration,
-      vsync: this,
-    );
-  }
-
-  void _onScrollChanged() {
-    if (_isProgrammaticScroll || !_scrollController.hasClients) return;
-
-    // Don't update selection during snap animation, pan gesture, or date loading
-    if (_isScrolling || _isPanGestureActive || _isLoadingDates) return;
-
-    final position = _scrollController.position;
-
-    // Detect if user scroll is in progress (only when not in pan gesture)
-    final isScrollingNow = position.isScrollingNotifier.value;
-
-    if (isScrollingNow && !_userScrollInProgress) {
-      // Scroll started
-      _userScrollInProgress = true;
-      _pendingCallbackAfterScroll = false;
-    } else if (!isScrollingNow && _userScrollInProgress) {
-      // Scroll ended
-      _userScrollInProgress = false;
-      if (_pendingCallbackAfterScroll && mounted) {
-        // Ensure selected date is centered and call callback
-        _scrollToDateAtIndex(_currentSelectedIndex, animate: true).then((_) {
-          if (mounted) {
-            widget.onDateSelected?.call(_selectedDate.date);
-          }
-        });
-        _pendingCallbackAfterScroll = false;
-      }
-    }
-
-    // Calculate which item is closest to center with sensitive threshold
-    final viewportWidth = position.viewportDimension;
-    final scrollOffset = position.pixels;
-    final centerOffset = scrollOffset + (viewportWidth / 2);
-
-    final centerIndex = _calculateDateIndexFromOffset(centerOffset);
-
-    if (centerIndex != _currentSelectedIndex && centerIndex < _days.length) {
-      setState(() {
-        _currentSelectedIndex = centerIndex;
-        _selectedDate = _days[centerIndex].copyWith(isSelected: true);
-        _updateDaysSelection(centerIndex);
-      });
-
-      _checkAndLoadMoreDates(centerIndex);
-
-      // Mark that we have a pending callback if scroll is in progress
-      if (_userScrollInProgress) {
-        _pendingCallbackAfterScroll = true;
-      } else if (!_isScrolling && mounted) {
-        // If not scrolling, call immediately with correct date
-        widget.onDateSelected?.call(_selectedDate.date);
-      }
-    }
-  }
-
-  double _getItemTotalWidth() {
-    final dateSpacing =
-        widget.style?.dateSpacing ?? _CalendarConstants.dateSpacing;
-    return widget.dayWidth + (dateSpacing * 2);
-  }
-
-  /// Calculate the target date index based on scroll position and sensitivity threshold
-  int _calculateDateIndexFromOffset(double centerOffset) {
-    final itemTotalWidth = _getItemTotalWidth();
-    final rawIndex = centerOffset / itemTotalWidth;
-    final floorIndex = rawIndex.floor();
-    final remainder = rawIndex - floorIndex;
-
-    int targetIndex;
-    if (remainder < _CalendarConstants.selectionThreshold) {
-      // In the first 25% of current item, select previous
-      targetIndex = floorIndex - 1;
-    } else if (remainder > (1 - _CalendarConstants.selectionThreshold)) {
-      // In the last 25% of current item, select next
-      targetIndex = floorIndex + 1;
-    } else {
-      // In the middle 50%, stay with current item
-      targetIndex = floorIndex;
-    }
-
-    return targetIndex.clamp(0, _days.length - 1);
-  }
-
-  void _scheduleInitialCallback() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         widget.onDateSelected?.call(_selectedDate.date);
       }
     });
+
+    _isInitialized = true;
   }
 
   void _generateDaysInRange() {
-    _days = _getDaysInRange(_startDate, _endDate);
+    final selectedDate = _isInitialized ? _selectedDate.date : _currentDate;
+    _days = _getDaysInRange(_startDate, _endDate, selectedDate);
     _rebuildDateIndexMap();
   }
 
-  List<CalendarDate> _getDaysInRange(DateTime start, DateTime end) {
+  List<CalendarDate> _getDaysInRange(
+    DateTime start,
+    DateTime end,
+    DateTime? selectedDate,
+  ) {
     final days = <CalendarDate>[];
     var current = start;
 
     while (!current.isAfter(end)) {
-      final isSelected = _isSameDate(current, _selectedDate.date);
+      final isSelected =
+          selectedDate != null && _isSameDate(current, selectedDate);
       days.add(CalendarDate(date: current, isSelected: isSelected));
       current = current.add(const Duration(days: 1));
     }
@@ -368,7 +246,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
         date1.day == date2.day;
   }
 
-  /// Optimized date index finder using Map lookup instead of linear search
   int _findDateIndex(DateTime targetDate) {
     final dateKey = _getDateKey(targetDate);
     final index = _dateIndexMap[dateKey];
@@ -377,7 +254,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
       return index;
     }
 
-    // Fallback to linear search if map lookup fails
     final fallbackIndex = _days.indexWhere(
       (day) => _isSameDate(day.date, targetDate),
     );
@@ -417,100 +293,44 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     }
   }
 
-  void _scrollToDate(DateTime targetDate) {
+  void _scrollToDate(DateTime targetDate, {bool callCallback = true}) {
     if (!_isInitialized) return;
 
     _ensureDateInRange(targetDate);
     final index = _findDateIndex(targetDate);
 
     setState(() {
-      _currentDate = targetDate; // Update _currentDate to sync with controller
+      _currentDate = targetDate;
       _currentSelectedIndex = index;
       _selectedDate = CalendarDate(date: targetDate, isSelected: true);
-      _updateDaysSelection(index);
-      _isScrolling = true;
+      _updateDaysSelection(targetDate);
     });
 
     _scrollToDateAtIndex(index, animate: true).then((_) {
       if (mounted) {
-        setState(() {
-          _isScrolling = false;
-        });
-
-        // Check and load more dates after scroll animation completes
         _checkAndLoadMoreDates(index);
-
-        // Call onDateSelected after programmatic scroll completes
-        widget.onDateSelected?.call(_selectedDate.date);
-      }
-    });
-  }
-
-  void _scrollToDateWithoutCallback(DateTime targetDate) {
-    if (!_isInitialized) return;
-
-    _ensureDateInRange(targetDate);
-    final index = _findDateIndex(targetDate);
-
-    setState(() {
-      _currentDate = targetDate; // Update _currentDate to sync with controller
-      _currentSelectedIndex = index;
-      _selectedDate = CalendarDate(date: targetDate, isSelected: true);
-      _updateDaysSelection(index);
-      _isScrolling = true;
-    });
-
-    _scrollToDateAtIndex(index, animate: true).then((_) {
-      if (mounted) {
-        setState(() {
-          _isScrolling = false;
-        });
-
-        // Check and load more dates after scroll animation completes
-        _checkAndLoadMoreDates(index);
-
-        // Don't call onDateSelected for navigation-only changes
+        if (callCallback) {
+          widget.onDateSelected?.call(_selectedDate.date);
+        }
       }
     });
   }
 
   Future<void> _scrollToDateAtIndex(int index, {bool animate = true}) async {
-    if (!_scrollController.hasClients) return;
-
-    final itemTotalWidth = _getItemTotalWidth();
-    final viewportWidth = _scrollController.position.viewportDimension;
-    // Use itemTotalWidth / 2 instead of widget.itemWidth / 2 to account for dateSpacing
-    final targetOffset =
-        (index * itemTotalWidth) - (viewportWidth / 2) + (itemTotalWidth / 2);
-
-    final clampedOffset = targetOffset.clamp(
-      _scrollController.position.minScrollExtent,
-      _scrollController.position.maxScrollExtent,
-    );
-
-    _isProgrammaticScroll = true;
+    if (_pageController == null) return;
 
     if (animate) {
-      await _scrollController.animateTo(
-        clampedOffset,
+      await _pageController!.animateToPage(
+        index,
         duration: _CalendarConstants.animationDuration,
         curve: Curves.easeInOut,
       );
     } else {
-      _scrollController.jumpTo(clampedOffset);
-    }
-
-    _isProgrammaticScroll = false;
-  }
-
-  void _updateDaysSelection(int selectedIndex) {
-    for (int i = 0; i < _days.length; i++) {
-      _days[i] = _days[i].copyWith(isSelected: i == selectedIndex);
+      _pageController!.jumpToPage(index);
     }
   }
 
   void _checkAndLoadMoreDates(int index) {
-    // Prevent multiple simultaneous loading operations
     if (_isLoadingDates) return;
 
     if (index >= _days.length - _CalendarConstants.loadThreshold) {
@@ -525,116 +345,40 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   void _expandDaysForward() {
     if (_isLoadingDates) return;
 
-    _isLoadingDates = true;
-
-    final newEndDate = _endDate.add(
-      const Duration(days: _CalendarConstants.loadDaysCount),
-    );
-
-    // Generate new days without immediately calling setState
-    final newDays = _getDaysInRange(_startDate, newEndDate);
-
-    // Use microtask to avoid immediate UI update during scroll
-    Future.microtask(() {
-      if (mounted && !_isScrolling && !_isPanGestureActive) {
-        setState(() {
-          _endDate = newEndDate;
-          _days = newDays;
-          _rebuildDateIndexMap();
-          _isLoadingDates = false;
-        });
-      } else {
-        // Defer update until scroll/pan gesture completes
-        _scheduleDelayedUpdate(() {
-          if (mounted) {
-            setState(() {
-              _endDate = newEndDate;
-              _days = newDays;
-              _rebuildDateIndexMap();
-              _isLoadingDates = false;
-            });
-          }
-        });
-      }
+    setState(() {
+      _isLoadingDates = true;
+      _endDate = _endDate.add(
+        const Duration(days: _CalendarConstants.loadDaysCount),
+      );
+      _generateDaysInRange();
+      _isLoadingDates = false;
     });
   }
 
   void _expandDaysBackward() {
     if (_isLoadingDates) return;
 
-    _isLoadingDates = true;
-
     final currentSelectedDate = _selectedDate.date;
     final newStartDate = _startDate.subtract(
       const Duration(days: _CalendarConstants.loadDaysCount),
     );
 
-    // Generate new days without immediately calling setState
-    final newDays = _getDaysInRange(newStartDate, _endDate);
-    final newSelectedIndex = _findDateIndexInList(currentSelectedDate, newDays);
+    setState(() {
+      _isLoadingDates = true;
+      _startDate = newStartDate;
+      _generateDaysInRange();
+      _currentSelectedIndex = _findDateIndex(currentSelectedDate);
+      _isLoadingDates = false;
+    });
 
-    // Use microtask to avoid immediate UI update during scroll
-    Future.microtask(() {
-      if (mounted && !_isScrolling && !_isPanGestureActive) {
-        setState(() {
-          _startDate = newStartDate;
-          _days = newDays;
-          _currentSelectedIndex = newSelectedIndex;
-          _rebuildDateIndexMap();
-          _isLoadingDates = false;
-        });
-
-        // Schedule scroll position adjustment without animation to prevent flicker
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _scrollController.hasClients) {
-            _scrollToDateAtIndex(_currentSelectedIndex, animate: false);
-          }
-        });
-      } else {
-        // Defer update until scroll/pan gesture completes
-        _scheduleDelayedUpdate(() {
-          if (mounted) {
-            setState(() {
-              _startDate = newStartDate;
-              _days = newDays;
-              _currentSelectedIndex = newSelectedIndex;
-              _rebuildDateIndexMap();
-              _isLoadingDates = false;
-            });
-
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && _scrollController.hasClients) {
-                _scrollToDateAtIndex(_currentSelectedIndex, animate: false);
-              }
-            });
-          }
-        });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _pageController != null) {
+        _scrollToDateAtIndex(_currentSelectedIndex, animate: false);
       }
     });
-  }
-
-  // Helper method to schedule delayed updates
-  void _scheduleDelayedUpdate(VoidCallback callback) {
-    Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (!_isScrolling && !_isPanGestureActive) {
-        timer.cancel();
-        callback();
-      }
-    });
-  }
-
-  // Helper method to find date index in a specific list
-  int _findDateIndexInList(DateTime targetDate, List<CalendarDate> daysList) {
-    for (int i = 0; i < daysList.length; i++) {
-      if (_isSameDate(daysList[i].date, targetDate)) {
-        return i;
-      }
-    }
-    return 0;
   }
 
   void _onDateTap(CalendarDate calendarDate) {
-    // Update controller if provided
     if (widget.controller != null) {
       widget.controller!.selectDate(calendarDate.date);
     } else {
@@ -660,82 +404,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     }
   }
 
-  // MARK: - Gesture Handling
-
-  /// Handle pan gesture start - initialize pan state and stop animations
-  void _onPanStart(DragStartDetails details) {
-    _startPanOffset = details.globalPosition.dx;
-    _lastPanOffset = _startPanOffset;
-    _animationController.stop();
-
-    // Mark that pan gesture is active
-    _isPanGestureActive = true;
-    _userScrollInProgress = false;
-    _pendingCallbackAfterScroll = false;
-  }
-
-  /// Handle pan gesture update - scroll content based on finger movement
-  void _onPanUpdate(DragUpdateDetails details) {
-    if (!_scrollController.hasClients) return;
-
-    final currentOffset = details.globalPosition.dx;
-    final deltaX =
-        (_lastPanOffset - currentOffset) * _CalendarConstants.scrollSensitivity;
-
-    _lastPanOffset = currentOffset;
-
-    final newScrollOffset = _scrollController.offset + deltaX;
-    final clampedOffset = newScrollOffset.clamp(
-      _scrollController.position.minScrollExtent,
-      _scrollController.position.maxScrollExtent,
-    );
-
-    _scrollController.jumpTo(clampedOffset);
-  }
-
-  /// Handle pan gesture end - snap to nearest date and update selection
-  void _onPanEnd(DragEndDetails details) {
-    if (!_scrollController.hasClients) return;
-
-    // Calculate nearest date for snapping using same logic as selection
-    final viewportWidth = _scrollController.position.viewportDimension;
-    final centerOffset = _scrollController.offset + (viewportWidth / 2);
-    final nearestIndex = _calculateDateIndexFromOffset(centerOffset);
-
-    // Start snap animation without changing selection state yet
-    setState(() {
-      _isScrolling = true;
-    });
-
-    _scrollToDateAtIndex(nearestIndex, animate: true).then((_) {
-      if (mounted) {
-        // Update all state after snap animation completes
-        setState(() {
-          _isScrolling = false;
-          _currentSelectedIndex = nearestIndex;
-          _selectedDate = _days[nearestIndex].copyWith(isSelected: true);
-          _updateDaysSelection(nearestIndex);
-        });
-
-        // Mark pan gesture and scroll as ended
-        _isPanGestureActive = false;
-        _userScrollInProgress = false;
-        _pendingCallbackAfterScroll = false;
-
-        // Check and load more dates after snap animation completes
-        _checkAndLoadMoreDates(nearestIndex);
-
-        // Update controller if provided
-        if (widget.controller != null) {
-          widget.controller!.selectDate(_selectedDate.date);
-        }
-
-        // Call onDateSelected after snap animation and state update completes
-        widget.onDateSelected?.call(_selectedDate.date);
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
@@ -749,7 +417,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   Widget _buildHeader(DateTime displayDate) {
-    // Generate dateText with common logic
     final dateFormatter = widget.headerDateFormat != null
         ? DateFormat(widget.headerDateFormat, widget.locale?.languageCode)
         : DateFormat.MMMd(widget.locale?.languageCode);
@@ -781,17 +448,13 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
   bool _isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day;
+    return _isSameDate(date, now);
   }
 
   bool _isYesterday(DateTime date) {
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
-    return date.year == yesterday.year &&
-        date.month == yesterday.month &&
-        date.day == yesterday.day;
+    return _isSameDate(date, yesterday);
   }
 
   String? _getTodayText() {
@@ -844,10 +507,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              height: 1,
-              color: _CalendarConstants.separatorColor,
-            ),
+            child: Container(height: 1, color: Colors.grey[300]),
           ),
         ],
       ),
@@ -857,20 +517,12 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   Widget _buildDateCarousel() {
     return SizedBox(
       height: _calculatedHeight,
-      child: GestureDetector(
-        onPanStart: _onPanStart,
-        onPanUpdate: _onPanUpdate,
-        onPanEnd: _onPanEnd,
-        child: ListView.builder(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          physics:
-              const NeverScrollableScrollPhysics(), // Disable default scrolling
-          itemCount: _days.length,
-          itemBuilder: (context, index) => _buildDateItem(context, index),
-          // Add caching for better performance
-          cacheExtent: MediaQuery.of(context).size.width * 2,
-        ),
+      child: PageView.builder(
+        controller: _pageController!,
+        pageSnapping: true,
+        onPageChanged: _onPageChanged,
+        itemCount: _days.length,
+        itemBuilder: (_, index) => _buildDateItem(context, index),
       ),
     );
   }
@@ -901,7 +553,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
   Widget _buildWeekdayLabel(DateTime date, bool isSelected) {
     final weekday = date.weekday;
-    final weekdayIndex = weekday == 7 ? 0 : weekday; // Adjust Sunday index
+    final weekdayIndex = weekday == 7 ? 0 : weekday;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -944,10 +596,10 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
       );
     }
 
-    return _buildDefaultDayItem(calendarDate, calendarDate.isSelected);
+    return _buildDefaultDayItem(calendarDate);
   }
 
-  Widget _buildDefaultDayItem(CalendarDate calendarDate, bool isSelected) {
+  Widget _buildDefaultDayItem(CalendarDate calendarDate) {
     final itemSize = widget.dayWidth * _CalendarConstants.dayItemSizeRatio;
 
     return GestureDetector(
@@ -958,7 +610,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
         width: itemSize,
         height: itemSize,
         decoration: BoxDecoration(
-          color: isSelected
+          color: calendarDate.isSelected
               ? _CalendarConstants.selectedBackgroundColor
               : _CalendarConstants.dayItemBackgroundColor,
           shape: BoxShape.circle,
@@ -968,7 +620,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
             child: AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
-              style: _getDayTextStyle(isSelected),
+              style: _getDayTextStyle(calendarDate.isSelected),
               child: Text(calendarDate.date.day.toString()),
             ),
           ),
@@ -983,6 +635,24 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       fontSize: _CalendarConstants.defaultDayFontSize,
     );
+  }
+
+  void _updateDaysSelection(DateTime selectedDate) {
+    for (int i = 0; i < _days.length; i++) {
+      _days[i] = _days[i].copyWith(
+        isSelected: _isSameDate(_days[i].date, selectedDate),
+      );
+    }
+  }
+
+  void _onPageChanged(int page) {
+    setState(() {
+      _currentSelectedIndex = page;
+      _selectedDate = _days[page].copyWith(isSelected: true);
+      _updateDaysSelection(_days[page].date);
+    });
+    widget.onDateSelected?.call(_selectedDate.date);
+    _checkAndLoadMoreDates(page);
   }
 }
 
