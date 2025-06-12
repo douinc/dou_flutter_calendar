@@ -114,6 +114,38 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   void didUpdateWidget(SingleLineCalendar oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // Recreate PageController if the spacing between date items has changed.
+    final double oldDateSpacing =
+        oldWidget.style?.dateSpacing ?? _CalendarConstants.dateSpacing;
+    final double newDateSpacing =
+        widget.style?.dateSpacing ?? _CalendarConstants.dateSpacing;
+
+    if (oldDateSpacing != newDateSpacing && _pageController != null) {
+      // Preserve the current page so that the scroll position remains the same
+      final int currentPage = _pageController!.hasClients
+          ? _pageController!.page?.round() ?? _currentSelectedIndex
+          : _currentSelectedIndex;
+
+      // Dispose the old controller before creating a new one to avoid leaks
+      _pageController!.dispose();
+
+      final viewportFraction =
+          (_CalendarConstants.defaultDayWidth + (newDateSpacing * 2)) /
+          MediaQuery.of(context).size.width;
+
+      _pageController = PageController(
+        initialPage: currentPage,
+        viewportFraction: viewportFraction,
+      );
+
+      // After the new controller is attached, jump to the preserved page
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _pageController != null) {
+          _scrollToDateAtIndex(currentPage, animate: false);
+        }
+      });
+    }
+
     if (widget.controller != oldWidget.controller) {
       oldWidget.controller?.removeListener(_onControllerChanged);
       widget.controller?.addListener(_onControllerChanged);
