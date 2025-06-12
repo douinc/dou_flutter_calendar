@@ -11,10 +11,9 @@ class _CalendarConstants {
   static const double weekdayPadding = 6.0;
   static const double weekdayToDateSpacing = 4.0;
   static const double bottomPadding = 8.0;
-  static const double triangleWidth = 15.0;
-  static const double triangleHeight = 10.0;
-  static const double separatorHeight = 11.0;
-  static const double topSpacing = 10.0;
+  static const double triangleWidth = 16.0;
+  static const double triangleHeight = 14.0;
+  static const double topSpacing = 8.0;
   static const int loadThreshold = 10;
   static const int loadDaysCount = 30;
   static const Duration animationDuration = Duration(milliseconds: 300);
@@ -502,28 +501,24 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   Widget _buildTriangleIndicator() {
-    return SizedBox(
-      width: double.infinity,
-      height: _CalendarConstants.separatorHeight,
-      child: Stack(
-        children: [
-          Center(
-            child: CustomPaint(
-              size: const Size(
-                _CalendarConstants.triangleWidth,
-                _CalendarConstants.triangleHeight,
-              ),
-              painter: _TrianglePainter(),
+    return Stack(
+      children: [
+        Center(
+          child: CustomPaint(
+            size: const Size(
+              _CalendarConstants.triangleWidth,
+              _CalendarConstants.triangleHeight,
             ),
+            painter: _TrianglePainter(),
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(height: 1, color: Colors.grey[300]),
-          ),
-        ],
-      ),
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(height: 1, color: Colors.grey[300]),
+        ),
+      ],
     );
   }
 
@@ -690,11 +685,26 @@ class _TrianglePainter extends CustomPainter {
       ..color = _CalendarConstants.selectedBackgroundColor
       ..style = PaintingStyle.fill;
 
-    final path = Path()
-      ..moveTo(size.width / 2, size.height)
-      ..lineTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..close();
+    const cornerRadius = 4.0;
+    final path = Path();
+
+    final tip = Offset(size.width / 2, size.height);
+    final topRight = Offset(size.width, 0);
+    final topLeft = Offset(0, 0);
+
+    final vecFromTipToTopRight = topRight - tip;
+    final distance = vecFromTipToTopRight.distance;
+    final pOnRightEdge = tip + (vecFromTipToTopRight / distance) * cornerRadius;
+
+    final vecFromTipToTopLeft = topLeft - tip;
+    final pOnLeftEdge = tip + (vecFromTipToTopLeft / distance) * cornerRadius;
+
+    path.moveTo(topLeft.dx, topLeft.dy);
+    path.lineTo(topRight.dx, topRight.dy);
+    path.lineTo(pOnRightEdge.dx, pOnRightEdge.dy);
+    path.quadraticBezierTo(tip.dx, tip.dy, pOnLeftEdge.dx, pOnLeftEdge.dy);
+    path.lineTo(topLeft.dx, topLeft.dy);
+    path.close();
 
     canvas.drawPath(path, paint);
   }
