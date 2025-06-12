@@ -311,9 +311,6 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     _scrollToDateAtIndex(index, animate: true).then((_) {
       if (mounted) {
         _checkAndLoadMoreDates(index);
-        if (callCallback) {
-          widget.onDateSelected?.call(_selectedDate.date);
-        }
       }
     });
   }
@@ -533,14 +530,31 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   Widget _buildDateCarousel() {
     return SizedBox(
       height: _calculatedHeight,
-      child: IgnorePointer(
-        ignoring: _isScrollAnimating,
-        child: PageView.builder(
-          controller: _pageController!,
-          pageSnapping: true,
-          onPageChanged: _onPageChanged,
-          itemCount: _days.length,
-          itemBuilder: (_, index) => _buildDateItem(context, index),
+      child: NotificationListener<ScrollEndNotification>(
+        onNotification: (notification) {
+          _checkAndLoadMoreDates(_currentSelectedIndex);
+          setState(() {
+            _selectedDate = _days[_currentSelectedIndex].copyWith(
+              isSelected: true,
+            );
+            _updateDaysSelection(_days[_currentSelectedIndex].date);
+          });
+          // When scrolling (either user gesture or programmatic animation) ends,
+          // notify that the current date has been selected exactly once.
+          widget.onDateSelected?.call(_selectedDate.date);
+          // Return false so that the notification continues to propagate.
+
+          return false;
+        },
+        child: IgnorePointer(
+          ignoring: _isScrollAnimating,
+          child: PageView.builder(
+            controller: _pageController!,
+            pageSnapping: true,
+            onPageChanged: _onPageChanged,
+            itemCount: _days.length,
+            itemBuilder: (_, index) => _buildDateItem(context, index),
+          ),
         ),
       ),
     );
@@ -665,13 +679,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   void _onPageChanged(int page) {
-    setState(() {
-      _currentSelectedIndex = page;
-      _selectedDate = _days[page].copyWith(isSelected: true);
-      _updateDaysSelection(_days[page].date);
-    });
-    widget.onDateSelected?.call(_selectedDate.date);
-    _checkAndLoadMoreDates(page);
+    _currentSelectedIndex = page;
   }
 }
 
