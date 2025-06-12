@@ -38,7 +38,6 @@ class SingleLineCalendar extends StatefulWidget {
   final Function(DateTime)? onDateSelected;
   final List<CalendarDate>? initialSelectedDates;
   final List<CalendarDate>? days;
-  final double dayWidth;
   final SingleLineCalendarStyle? style;
   final String? headerDateFormat;
   final Locale? locale;
@@ -53,7 +52,6 @@ class SingleLineCalendar extends StatefulWidget {
     this.onDateSelected,
     this.initialSelectedDates,
     this.days,
-    this.dayWidth = _CalendarConstants.defaultDayWidth,
     this.style,
     this.headerDateFormat,
     this.locale,
@@ -135,7 +133,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
           widget.style?.dateSpacing ?? _CalendarConstants.dateSpacing;
 
       final viewportFraction =
-          (widget.dayWidth + (dateSpacing * 2)) /
+          (_CalendarConstants.defaultDayWidth + (dateSpacing * 2)) /
           MediaQuery.of(context).size.width;
 
       _pageController = PageController(
@@ -188,7 +186,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
         _CalendarConstants.weekdayPadding * 2 +
         _CalendarConstants.weekdayPaddingAdjustment;
 
-    final dayItemHeight = widget.dayWidth * _CalendarConstants.dayItemSizeRatio;
+    final dayItemHeight =
+        _CalendarConstants.defaultDayWidth *
+        _CalendarConstants.dayItemSizeRatio;
 
     _calculatedHeight =
         weekdayHeight +
@@ -565,7 +565,7 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
 
     return RepaintBoundary(
       child: Container(
-        width: widget.dayWidth + (dateSpacing * 2),
+        width: _CalendarConstants.defaultDayWidth + (dateSpacing * 2),
         padding: EdgeInsets.symmetric(horizontal: dateSpacing),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -628,7 +628,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   Widget _buildDefaultDayItem(CalendarDate calendarDate) {
-    final itemSize = widget.dayWidth * _CalendarConstants.dayItemSizeRatio;
+    final itemSize =
+        _CalendarConstants.defaultDayWidth *
+        _CalendarConstants.dayItemSizeRatio;
 
     return GestureDetector(
       onTap: () => _onDateTap(calendarDate),

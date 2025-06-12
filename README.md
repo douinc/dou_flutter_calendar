@@ -33,7 +33,7 @@ A highly customizable and feature-rich calendar widget for Flutter applications.
 
 - **Multiple Calendar View Types**:
   - Grid view (traditional month view)
-  - Single line view (horizontal scrolling)
+  - Single line view (horizontal scrolling with advanced features)
 - **Multi-date Selection Support**: Choose multiple dates or single date
 - **Customizable Styles and Themes**: Full control over appearance with separate styles for Grid and Single Line views
 - **Internationalization Support**: 
@@ -44,7 +44,14 @@ A highly customizable and feature-rich calendar widget for Flutter applications.
 - **Flexible Date Formatting**: Custom date formats for headers
 - **Custom Day and Header Rendering**: Full control over individual day cells and calendar headers
 - **Calendar Controller**: Programmatic control over calendar state with navigation and selection modes
-- **Advanced Single Line Calendar**: Smooth scrolling with infinite date loading and intelligent date selection
+- **Advanced Single Line Calendar**: 
+  - **Infinite Scrolling**: Automatically loads more dates as you scroll
+  - **Triangle Indicator**: Visual pointer showing the selected date
+  - **Smooth Animations**: 200ms-300ms transitions for seamless interactions
+  - **PageView Implementation**: Optimized horizontal scrolling experience
+  - **Today/Yesterday Labels**: Intelligent date labeling with internationalization
+  - **Performance Optimized**: RepaintBoundary and efficient date indexing
+  - **Auto Date Range Expansion**: Dynamically expands date range as needed
 - **Responsive Design**: Adapts to different screen sizes and orientations
 
 ## Installation
@@ -124,19 +131,22 @@ Calendar(
 )
 ```
 
-### Single Line Calendar with Custom Style
+### Advanced Single Line Calendar with Custom Style
 
 ```dart
 Calendar(
   viewType: CalendarViewType.singleLine,
-  dayWidth: 60.0,
   singleLineStyle: SingleLineCalendarStyle(
     weekdayTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-    dateSpacing: 8.0,
+    dateSpacing: 8.0, // Spacing between date items
     showNavigationButtons: false,
   ),
+  locale: const Locale('ko'), // Shows "오늘" for today
   onDateSelected: (date) {
-    // Handle selection
+    print('Selected: $date');
+    // Automatic infinite scrolling - loads more dates as needed
+    // Triangle indicator points to selected date
+    // Smooth 300ms animations for date transitions
   },
 )
 ```
@@ -150,6 +160,35 @@ Calendar(
   initialDate: DateTime.now(),
   onDateSelected: (DateTime date) {
     // Handle date selection
+  },
+)
+```
+
+### Single Line Calendar with Advanced Features
+
+```dart
+Calendar(
+  viewType: CalendarViewType.singleLine,
+  initialDate: DateTime.now(),
+  locale: const Locale('en'),
+  singleLineStyle: SingleLineCalendarStyle(
+    weekdayTextStyle: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: Colors.grey[600],
+    ),
+    dateSpacing: 6.0,
+    showNavigationButtons: true,
+  ),
+  onDateSelected: (DateTime date) {
+    print('Selected: $date');
+    // Features automatically available:
+    // ✓ Triangle indicator showing selected date
+    // ✓ Infinite scrolling (loads 30 days at a time)
+    // ✓ Smooth 300ms animations
+    // ✓ Today/Yesterday labels in selected language
+    // ✓ Optimized performance with RepaintBoundary
+    // ✓ PageView-based implementation for better UX
   },
 )
 ```
@@ -307,7 +346,6 @@ Calendar(
 | `controller` | `CalendarController?` | Calendar controller for programmatic control | `null` |
 | `dayBuilder` | `Widget Function(CalendarDate)?` | Custom day cell builder | `null` |
 | `headerBuilder` | `Widget Function(DateTime)?` | Custom header builder | `null` |
-| `dayWidth` | `double` | Width of each day in single line view | `50.0` |
 | `days` | `List<CalendarDate>?` | Custom list of days to display | Auto-generated |
 
 ### GridCalendarStyle Properties
@@ -330,9 +368,9 @@ Calendar(
 
 | Property | Type | Description | Default |
 |----------|------|-------------|---------|
-| `weekdayTextStyle` | `TextStyle?` | Text style for weekday headers | Default text style |
-| `dateSpacing` | `double?` | Spacing between date items | `4.0` |
-| `showNavigationButtons` | `bool?` | Show navigation buttons | `true` |
+| `weekdayTextStyle` | `TextStyle?` | Text style for weekday headers (displayed above each date) | Default text style |
+| `dateSpacing` | `double?` | Horizontal spacing between date items | `4.0` |
+| `showNavigationButtons` | `bool?` | Show navigation buttons in header | `true` |
 
 ### CalendarController Methods
 
@@ -347,11 +385,22 @@ Calendar(
 | `goToToday()` | Move to today | ✅ Yes |
 | `goToDate(int year, int month, int day)` | Go to specific date | ✅ Yes |
 
+### Single Line Calendar Performance Features
+
+The Single Line Calendar is optimized for smooth performance with several advanced techniques:
+
+- **Date Index Mapping**: Efficient O(1) date lookups using HashMap-based indexing
+- **RepaintBoundary**: Each date item is wrapped in RepaintBoundary for optimized rendering
+- **Lazy Loading**: Automatically loads 30 days forward/backward when reaching threshold (10 items)
+- **Animation Control**: Prevents user interaction during programmatic scrolling
+- **Memory Efficient**: Dynamic date range expansion only when needed
+- **PageView Implementation**: Hardware-accelerated scrolling with viewport fraction control
+
 ### Supported Locales
 
 - `en` - English
 - `ko` - Korean (한국어)
-- `ja` - Japanese (日本語)
+- `ja` - Japanese (日本語)  
 - `zh` - Chinese (中文)
 
 ## Development
