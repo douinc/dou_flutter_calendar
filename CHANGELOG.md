@@ -1,3 +1,18 @@
+## 0.0.4
+
+* **BREAKING CHANGES**:
+  - Removed `Calendar` widget, which has been replaced by `GridCalendar` and `SingleLineCalendar`.
+* **New Features**:
+  - Added `onMonthChanged` callback to `GridCalendar` to handle month change events.
+  - Implemented `PageView` in `GridCalendar` for month-to-month navigation.
+  - Added `calendarHeight` property to `GridCalendarStyle` for custom height adjustment.
+* **Improvements**:
+  - Replaced `Calendar` widget with `GridCalendar` and `SingleLineCalendar` throughout the library, examples, and tests for improved clarity and consistency.
+  - Enhanced `GridCalendar`'s date selection logic for multi-select functionality.
+  - Streamlined calendar-related exports.
+  - Updated README to reflect the new widget structure and properties.
+  - Removed unused `dispose` method in `CalendarController`.
+
 ## 0.0.3
 
 * **BREAKING CHANGES**: 
