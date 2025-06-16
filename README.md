@@ -31,9 +31,9 @@ A highly customizable and feature-rich calendar widget for Flutter applications.
 
 ## Features
 
-- **Multiple Calendar View Types**:
-  - Grid view (traditional month view)
-  - Single line view (horizontal scrolling with advanced features)
+- **Multiple Calendar Widgets**:
+  - `GridCalendar`: A traditional month-view calendar.
+  - `SingleLineCalendar`: A horizontal scrolling calendar with advanced features.
 - **Multi-date Selection Support**: Choose multiple dates or single date
 - **Customizable Styles and Themes**: Full control over appearance with separate styles for Grid and Single Line views
 - **Internationalization Support**: 
@@ -76,8 +76,7 @@ flutter pub get
 ```dart
 import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
 
-Calendar(
-  viewType: CalendarViewType.grid,
+GridCalendar(
   initialDate: DateTime.now(),
   onDateSelected: (DateTime date) {
     print('Selected date: $date');
@@ -88,8 +87,7 @@ Calendar(
 ### Single Line Calendar
 
 ```dart
-Calendar(
-  viewType: CalendarViewType.singleLine,
+SingleLineCalendar(
   initialDate: DateTime.now(),
   onDateSelected: (DateTime date) {
     print('Selected date: $date');
@@ -100,8 +98,7 @@ Calendar(
 ### Multi-Select Calendar
 
 ```dart
-Calendar(
-  viewType: CalendarViewType.grid,
+GridCalendar(
   multiSelect: true,
   initialSelectedDates: [
     CalendarDate(date: DateTime.now()),
@@ -115,9 +112,8 @@ Calendar(
 ### Calendar with Custom Styling
 
 ```dart
-Calendar(
-  viewType: CalendarViewType.grid,
-  gridStyle: GridCalendarStyle(
+GridCalendar(
+  style: GridCalendarStyle(
     selectionColor: Colors.blue,
     dateTextStyle: TextStyle(fontSize: 16),
     weekdayTextStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -134,9 +130,8 @@ Calendar(
 ### Advanced Single Line Calendar with Custom Style
 
 ```dart
-Calendar(
-  viewType: CalendarViewType.singleLine,
-  singleLineStyle: SingleLineCalendarStyle(
+SingleLineCalendar(
+  style: SingleLineCalendarStyle(
     weekdayTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
     dateSpacing: 8.0, // Spacing between date items
     showNavigationButtons: false,
@@ -154,9 +149,8 @@ Calendar(
 ### Calendar with Localization
 
 ```dart
-Calendar(
+GridCalendar(
   locale: const Locale('ko'), // Korean
-  viewType: CalendarViewType.grid,
   initialDate: DateTime.now(),
   onDateSelected: (DateTime date) {
     // Handle date selection
@@ -167,11 +161,10 @@ Calendar(
 ### Single Line Calendar with Advanced Features
 
 ```dart
-Calendar(
-  viewType: CalendarViewType.singleLine,
+SingleLineCalendar(
   initialDate: DateTime.now(),
   locale: const Locale('en'),
-  singleLineStyle: SingleLineCalendarStyle(
+  style: SingleLineCalendarStyle(
     weekdayTextStyle: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
@@ -215,9 +208,8 @@ class _MyCalendarWidgetState extends State<MyCalendarWidget> {
     return Column(
       children: [
         // Calendar widget
-        Calendar(
+        GridCalendar(
           controller: _controller,
-          viewType: CalendarViewType.grid,
           initialDate: DateTime.now(),
           onDateSelected: (date) {
             print('Date selected via UI: $date');
@@ -269,8 +261,7 @@ class _MyCalendarWidgetState extends State<MyCalendarWidget> {
 ### Custom Day Builder
 
 ```dart
-Calendar(
-  viewType: CalendarViewType.grid,
+GridCalendar(
   dayBuilder: (CalendarDate calendarDate) {
     return Container(
       decoration: BoxDecoration(
@@ -300,8 +291,7 @@ Calendar(
 ### Custom Header Builder
 
 ```dart
-Calendar(
-  viewType: CalendarViewType.grid,
+GridCalendar(
   headerBuilder: (DateTime currentDate) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -329,20 +319,35 @@ Calendar(
 
 ## API Reference
 
-### Calendar Widget Properties
+### `GridCalendar` Properties
 
 | Property | Type | Description | Default |
 |----------|------|-------------|---------|
-| `viewType` | `CalendarViewType` | Calendar view type (grid or singleLine) | `CalendarViewType.grid` |
 | `initialDate` | `DateTime?` | Initial date to display | `DateTime.now()` |
 | `initialSelectedDates` | `List<CalendarDate>?` | Initially selected dates for multi-select | `null` |
 | `multiSelect` | `bool` | Enable multi-date selection | `false` |
 | `locale` | `Locale?` | Locale for internationalization | System locale |
-| `gridStyle` | `GridCalendarStyle?` | Custom styling options for grid view | Default style |
-| `singleLineStyle` | `SingleLineCalendarStyle?` | Custom styling options for single line view | Default style |
+| `style` | `GridCalendarStyle?` | Custom styling options for grid view | Default style |
 | `headerDateFormat` | `String?` | Custom header date format | `null` |
 | `onDateSelected` | `Function(DateTime)?` | Single date selection callback | `null` |
 | `onDatesSelected` | `Function(List<CalendarDate>)?` | Multi-date selection callback | `null` |
+| `onMonthChanged` | `Function(DateTime)?` | Callback for month changes | `null` |
+| `controller` | `CalendarController?` | Calendar controller for programmatic control | `null` |
+| `dayBuilder` | `Widget Function(CalendarDate)?` | Custom day cell builder | `null` |
+| `headerBuilder` | `Widget Function(DateTime)?` | Custom header builder | `null` |
+| `days` | `List<CalendarDate>?` | Custom list of days to display | Auto-generated |
+| `enableSwipe` | `bool` | Enable swiping to change months | `true` |
+
+### `SingleLineCalendar` Properties
+
+| Property | Type | Description | Default |
+|---|---|---|---|
+| `initialDate` | `DateTime?` | Initial date to display | `DateTime.now()` |
+| `initialSelectedDates` | `List<CalendarDate>?` | The initially selected date. Only the first date in the list is used. | `null` |
+| `locale` | `Locale?` | Locale for internationalization | System locale |
+| `style` | `SingleLineCalendarStyle?` | Custom styling options for single line view | Default style |
+| `headerDateFormat` | `String?` | Custom header date format | `null` |
+| `onDateSelected` | `Function(DateTime)?` | Date selection callback | `null` |
 | `controller` | `CalendarController?` | Calendar controller for programmatic control | `null` |
 | `dayBuilder` | `Widget Function(CalendarDate)?` | Custom day cell builder | `null` |
 | `headerBuilder` | `Widget Function(DateTime)?` | Custom header builder | `null` |

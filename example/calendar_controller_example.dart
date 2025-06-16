@@ -96,9 +96,8 @@ class _CalendarControllerExampleState extends State<CalendarControllerExample> {
             const Text('그리드 캘린더',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Calendar(
+            GridCalendar(
               controller: _calendarController,
-              viewType: CalendarViewType.grid,
               onDateSelected: (date) {
                 print('선택된 날짜: $date');
               },
@@ -110,9 +109,8 @@ class _CalendarControllerExampleState extends State<CalendarControllerExample> {
             const Text('싱글 라인 캘린더',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Calendar(
+            SingleLineCalendar(
               controller: _calendarController,
-              viewType: CalendarViewType.singleLine,
               onDateSelected: (date) {
                 print('선택된 날짜: $date');
               },

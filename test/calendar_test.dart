@@ -12,7 +12,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(body: Calendar(initialDate: DateTime(2024, 3, 1))),
+        home: Scaffold(body: GridCalendar(initialDate: DateTime(2024, 3, 1))),
       ),
     );
 
@@ -26,10 +26,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Calendar(
-              initialDate: DateTime(2024, 3, 1),
-              viewType: CalendarViewType.singleLine,
-            ),
+            body: SingleLineCalendar(initialDate: DateTime(2024, 3, 1)),
           ),
         ),
       );
@@ -46,7 +43,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: Calendar(
+          body: GridCalendar(
             initialDate: DateTime(2024, 3, 1),
             onDateSelected: (date) {
               selectedDate = date;
@@ -72,7 +69,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: Calendar(
+          body: GridCalendar(
             initialDate: DateTime(2024, 3, 1),
             multiSelect: true,
             initialSelectedDates: [], // Start with no selected dates
@@ -109,7 +106,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: Calendar(initialDate: DateTime(2024, 3, 1), gridStyle: style),
+          body: GridCalendar(initialDate: DateTime(2024, 3, 1), style: style),
         ),
       ),
     );
@@ -123,7 +120,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: Calendar(
+          body: GridCalendar(
             initialDate: DateTime(2024, 3, 1),
             locale: const Locale('ko', 'KR'),
           ),

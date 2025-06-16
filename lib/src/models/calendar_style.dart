@@ -85,9 +85,3 @@ class SingleLineCalendarStyle {
     );
   }
 }
-
-// 기존 CalendarStyle은 호환성을 위해 GridCalendarStyle의 alias로 유지
-@Deprecated('Use GridCalendarStyle instead')
-typedef CalendarStyle = GridCalendarStyle;
-
-enum CalendarViewType { singleLine, grid }

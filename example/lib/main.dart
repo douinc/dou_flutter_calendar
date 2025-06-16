@@ -18,6 +18,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+enum CalendarViewType { singleLine, grid }
+
 class CalendarExampleScreen extends StatefulWidget {
   const CalendarExampleScreen({Key? key}) : super(key: key);
 
@@ -126,9 +128,8 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
               horizontal: _selectedViewType == CalendarViewType.grid ? 16 : 0,
               vertical: _selectedViewType == CalendarViewType.grid ? 0 : 15,
             ),
-            child: Calendar(
+            child: GridCalendar(
               locale: _selectedLocale,
-              viewType: _selectedViewType,
               initialDate: _selectedDate,
               initialSelectedDates: _selectedDates,
               multiSelect: _multiSelect,

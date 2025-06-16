@@ -33,8 +33,7 @@ class _CalendarConstants {
 }
 
 class SingleLineCalendar extends StatefulWidget {
-  final CalendarViewType viewType;
-  final DateTime initialDate;
+  final DateTime? initialDate;
   final Function(DateTime)? onDateSelected;
   final List<CalendarDate>? initialSelectedDates;
   final List<CalendarDate>? days;
@@ -47,8 +46,7 @@ class SingleLineCalendar extends StatefulWidget {
 
   const SingleLineCalendar({
     super.key,
-    required this.viewType,
-    required this.initialDate,
+    this.initialDate,
     this.onDateSelected,
     this.initialSelectedDates,
     this.days,
@@ -182,7 +180,8 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
   }
 
   void _initializeCalendar() {
-    _currentDate = widget.controller?.currentDate ?? widget.initialDate;
+    _currentDate =
+        widget.controller?.currentDate ?? widget.initialDate ?? DateTime.now();
 
     _startDate = DateTime(
       _currentDate.year,

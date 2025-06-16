@@ -11,10 +11,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: SingleLineCalendar(
-            viewType: CalendarViewType.singleLine,
-            initialDate: DateTime(2024, 3, 1),
-          ),
+          body: SingleLineCalendar(initialDate: DateTime(2024, 3, 1)),
         ),
       ),
     );
@@ -34,7 +31,6 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: SingleLineCalendar(
-            viewType: CalendarViewType.singleLine,
             initialDate: DateTime(2024, 3, 15),
             onDateSelected: (date) {
               selectedDate = date;
@@ -62,10 +58,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: SingleLineCalendar(
-            viewType: CalendarViewType.singleLine,
-            initialDate: DateTime(2024, 3, 15),
-          ),
+          body: SingleLineCalendar(initialDate: DateTime(2024, 3, 15)),
         ),
       ),
     );
@@ -89,7 +82,6 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: SingleLineCalendar(
-            viewType: CalendarViewType.singleLine,
             initialDate: DateTime(2024, 3, 1),
             locale: const Locale('ko', 'KR'),
           ),
@@ -109,7 +101,6 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: SingleLineCalendar(
-            viewType: CalendarViewType.singleLine,
             initialDate: DateTime(2024, 3, 1),
             headerDateFormat: 'MMM d',
           ),
@@ -133,7 +124,6 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: SingleLineCalendar(
-            viewType: CalendarViewType.singleLine,
             initialDate: DateTime(2024, 3, 1),
             style: style,
           ),
