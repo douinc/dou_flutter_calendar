@@ -13,6 +13,7 @@ class GridCalendar extends StatefulWidget {
   final Function(DateTime)? onDateSelected;
   final Function(List<CalendarDate>)? onDatesSelected;
   final List<CalendarDate>? initialSelectedDates;
+  final Function(DateTime)? onMonthChanged;
   final bool multiSelect;
   final List<CalendarDate>? days;
   final GridCalendarStyle? style;
@@ -29,6 +30,7 @@ class GridCalendar extends StatefulWidget {
     this.onDateSelected,
     this.onDatesSelected,
     this.initialSelectedDates,
+    this.onMonthChanged,
     this.multiSelect = false,
     this.days,
     this.style,
@@ -225,6 +227,7 @@ class _GridCalendarState extends State<GridCalendar> {
               _currentDate = newDate;
             });
           }
+          widget.onMonthChanged?.call(newDate);
         },
         itemBuilder: (context, pageIndex) {
           final year = pageIndex ~/ 12;
