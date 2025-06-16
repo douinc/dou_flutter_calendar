@@ -90,7 +90,7 @@ void main() {
     final nextButton = find.byIcon(Icons.chevron_right);
     expect(nextButton, findsOneWidget);
     await tester.tap(nextButton);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // Verify that the month has changed
     expect(find.text('April 2024'), findsOneWidget);

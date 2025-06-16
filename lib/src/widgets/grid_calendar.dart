@@ -62,7 +62,11 @@ class _GridCalendarState extends State<GridCalendar> {
     // If no initial selected dates provided, default to current date
     if (widget.initialSelectedDates == null ||
         widget.initialSelectedDates!.isEmpty) {
-      _selectedDates = [CalendarDate(date: _currentDate, isSelected: true)];
+      if (widget.multiSelect) {
+        _selectedDates = [];
+      } else {
+        _selectedDates = [CalendarDate(date: _currentDate, isSelected: true)];
+      }
     } else {
       _selectedDates = widget.initialSelectedDates!;
     }
@@ -154,7 +158,11 @@ class _GridCalendarState extends State<GridCalendar> {
       // If no initial selected dates provided, default to current date
       if (widget.initialSelectedDates == null ||
           widget.initialSelectedDates!.isEmpty) {
-        _selectedDates = [CalendarDate(date: _currentDate, isSelected: true)];
+        if (widget.multiSelect) {
+          _selectedDates = [];
+        } else {
+          _selectedDates = [CalendarDate(date: _currentDate, isSelected: true)];
+        }
       } else {
         _selectedDates = widget.initialSelectedDates!;
       }

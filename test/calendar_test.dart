@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dou_flutter_calendar/src/widgets/calendar.dart';
 import 'package:dou_flutter_calendar/src/widgets/grid_calendar.dart';
 import 'package:dou_flutter_calendar/src/widgets/single_line_calendar.dart';
 import 'package:dou_flutter_calendar/src/models/calendar_date.dart';

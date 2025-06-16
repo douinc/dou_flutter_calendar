@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'dart:async';
 
+import 'calendar_header.dart';
+
 // Constants for better maintainability
 class _CalendarConstants {
   static const double defaultDayWidth = 50.0;
