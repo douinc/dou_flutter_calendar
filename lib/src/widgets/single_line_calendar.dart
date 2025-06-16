@@ -254,7 +254,12 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
     while (!current.isAfter(end)) {
       final isSelected =
           selectedDate != null && _isSameDate(current, selectedDate);
-      days.add(CalendarDate(date: current, isSelected: isSelected));
+      final isToday = _isToday(current);
+
+      days.add(
+        CalendarDate(date: current, isSelected: isSelected, isToday: isToday),
+      );
+
       current = current.add(const Duration(days: 1));
     }
 

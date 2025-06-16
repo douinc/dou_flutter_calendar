@@ -85,9 +85,4 @@ class CalendarController extends ChangeNotifier {
   void goToDate(int year, int month, int day) {
     selectDate(DateTime(year, month, day));
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
