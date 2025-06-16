@@ -128,22 +128,33 @@ class _CalendarExampleScreenState extends State<CalendarExampleScreen> {
               horizontal: _selectedViewType == CalendarViewType.grid ? 16 : 0,
               vertical: _selectedViewType == CalendarViewType.grid ? 0 : 15,
             ),
-            child: GridCalendar(
-              locale: _selectedLocale,
-              initialDate: _selectedDate,
-              initialSelectedDates: _selectedDates,
-              multiSelect: _multiSelect,
-              onDateSelected: (date) {
-                setState(() {
-                  _selectedDate = date;
-                });
-              },
-              onDatesSelected: (dates) {
-                setState(() {
-                  _selectedDates = dates;
-                });
-              },
-            ),
+            child: _selectedViewType == CalendarViewType.singleLine
+                ? SingleLineCalendar(
+                    locale: _selectedLocale,
+                    initialDate: _selectedDate,
+                    initialSelectedDates: _selectedDates,
+                    onDateSelected: (date) {
+                      setState(() {
+                        _selectedDate = date;
+                      });
+                    },
+                  )
+                : GridCalendar(
+                    locale: _selectedLocale,
+                    initialDate: _selectedDate,
+                    initialSelectedDates: _selectedDates,
+                    multiSelect: _multiSelect,
+                    onDateSelected: (date) {
+                      setState(() {
+                        _selectedDate = date;
+                      });
+                    },
+                    onDatesSelected: (dates) {
+                      setState(() {
+                        _selectedDates = dates;
+                      });
+                    },
+                  ),
           ),
           Column(
             children: [
