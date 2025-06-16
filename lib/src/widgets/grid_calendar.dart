@@ -46,14 +46,16 @@ class GridCalendar extends StatefulWidget {
 
 class _GridCalendarState extends State<GridCalendar> {
   late DateTime _currentDate;
-  late List<CalendarDate> _days;
   late List<CalendarDate> _selectedDates;
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
     _currentDate =
         widget.controller?.currentDate ?? widget.initialDate ?? DateTime.now();
+
+    _pageController = PageController(initialPage: _calculateInitialPage());
 
     // If no initial selected dates provided, default to current date
     if (widget.initialSelectedDates == null ||
@@ -62,8 +64,6 @@ class _GridCalendarState extends State<GridCalendar> {
     } else {
       _selectedDates = widget.initialSelectedDates!;
     }
-
-    _updateDays();
 
     // Listen to controller changes if provided
     widget.controller?.addListener(_onControllerChanged);
@@ -83,7 +83,12 @@ class _GridCalendarState extends State<GridCalendar> {
   @override
   void dispose() {
     widget.controller?.removeListener(_onControllerChanged);
+    _pageController.dispose();
     super.dispose();
+  }
+
+  int _calculateInitialPage() {
+    return (_currentDate.year * 12) + _currentDate.month - 1;
   }
 
   void _onControllerChanged() {
@@ -92,16 +97,20 @@ class _GridCalendarState extends State<GridCalendar> {
       final isSelection =
           widget.controller!.lastChangeType == CalendarChangeType.selection;
 
-      setState(() {
-        // Always update current date and days for both navigation and selection
-        _currentDate = newDate;
-        _updateDays();
+      if (!isSelection) {
+        final targetPage = (newDate.year * 12) + newDate.month - 1;
+        if (_pageController.hasClients &&
+            _pageController.page?.round() != targetPage) {
+          _pageController.jumpToPage(targetPage);
+        }
+      }
 
-        // Update selected dates only when it's a selection change
+      setState(() {
+        _currentDate = newDate;
+
         if (isSelection) {
           final calendarDate = CalendarDate(date: newDate, isSelected: true);
           if (widget.multiSelect) {
-            // For multi-select, add the date if not already selected
             if (!_selectedDates.any((d) => _isSameDate(d.date, newDate))) {
               _selectedDates.add(calendarDate);
             }
@@ -111,7 +120,6 @@ class _GridCalendarState extends State<GridCalendar> {
         }
       });
 
-      // Call callbacks only for selection changes
       if (isSelection) {
         widget.onDateSelected?.call(newDate);
         widget.onDatesSelected?.call(_selectedDates);
@@ -136,7 +144,7 @@ class _GridCalendarState extends State<GridCalendar> {
 
       if (widget.controller != null) {
         _currentDate = widget.controller!.currentDate;
-        _updateDays();
+        _pageController.jumpToPage(_calculateInitialPage());
       }
     }
 
@@ -151,90 +159,92 @@ class _GridCalendarState extends State<GridCalendar> {
     }
   }
 
-  void _updateDays() {
-    if (widget.days != null) {
-      _days = widget.days!;
-    } else {
-      _days = CalendarUtils.getDaysInMonth(_currentDate);
-    }
-  }
-
   void _onPreviousMonth() {
-    final newDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
-    if (widget.controller != null) {
-      widget.controller!.navigateToDate(newDate);
-    } else {
-      setState(() {
-        _currentDate = newDate;
-        _updateDays();
-      });
-    }
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.ease,
+    );
   }
 
   void _onNextMonth() {
-    final newDate = DateTime(_currentDate.year, _currentDate.month + 1, 1);
-    if (widget.controller != null) {
-      widget.controller!.navigateToDate(newDate);
-    } else {
-      setState(() {
-        _currentDate = newDate;
-        _updateDays();
-      });
-    }
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.ease,
+    );
   }
 
   void _onDateSelected(DateTime date) {
+    if (date.month != _currentDate.month || date.year != _currentDate.year) {
+      final targetPage = (date.year * 12) + date.month - 1;
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(targetPage);
+      }
+    }
     // Update controller if provided
     if (widget.controller != null) {
       widget.controller!.selectDate(date);
-    }
-
-    setState(() {
-      final calendarDate = CalendarDate(date: date, isSelected: true);
-      if (widget.multiSelect) {
-        if (_selectedDates.any((d) => _isSameDate(d.date, date))) {
-          _selectedDates.removeWhere((d) => _isSameDate(d.date, date));
+    } else {
+      setState(() {
+        final calendarDate = CalendarDate(date: date, isSelected: true);
+        if (widget.multiSelect) {
+          if (_selectedDates.any((d) => _isSameDate(d.date, date))) {
+            _selectedDates.removeWhere((d) => _isSameDate(d.date, date));
+          } else {
+            _selectedDates.add(calendarDate);
+          }
         } else {
-          _selectedDates.add(calendarDate);
+          _selectedDates = [calendarDate];
         }
-      } else {
-        _selectedDates = [calendarDate];
-      }
 
-      widget.onDateSelected?.call(date);
-      widget.onDatesSelected?.call(_selectedDates);
-    });
+        widget.onDateSelected?.call(date);
+        widget.onDatesSelected?.call(_selectedDates);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildHeader(),
-        GestureDetector(
-          onHorizontalDragEnd: widget.enableSwipe
-              ? (DragEndDetails details) {
-                  if (details.primaryVelocity == null) return;
+    return Column(children: [_buildHeader(), _buildPageView()]);
+  }
 
-                  if (details.primaryVelocity! > 0) {
-                    _onPreviousMonth();
-                  } else if (details.primaryVelocity! < 0) {
-                    _onNextMonth();
-                  }
-                }
-              : null,
-          child: CalendarMonth(
-            days: _days,
-            currentMonth: _currentDate,
+  Widget _buildPageView() {
+    final calendarHeight = widget.style?.calendarHeight ?? 440.0;
+
+    return SizedBox(
+      height: calendarHeight,
+      child: PageView.builder(
+        controller: _pageController,
+        onPageChanged: (pageIndex) {
+          final year = pageIndex ~/ 12;
+          final month = (pageIndex % 12) + 1;
+          final newDate = DateTime(year, month, 1);
+          if (widget.controller != null) {
+            widget.controller!.navigateToDate(newDate);
+          } else {
+            setState(() {
+              _currentDate = newDate;
+            });
+          }
+        },
+        itemBuilder: (context, pageIndex) {
+          final year = pageIndex ~/ 12;
+          final month = (pageIndex % 12) + 1;
+          final dateForPage = DateTime(year, month, 1);
+
+          final days = CalendarUtils.getDaysInMonth(dateForPage);
+
+          return CalendarMonth(
+            days: days,
+            currentMonth: dateForPage,
             onDateSelected: _onDateSelected,
             selectedDates: _selectedDates,
             multiSelect: widget.multiSelect,
             style: widget.style,
             locale: widget.locale,
             dayItemBuilder: widget.dayBuilder,
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 

@@ -12,6 +12,7 @@ class GridCalendarStyle {
   final double? rowSpacing;
   final double? otherMonthOpacity;
   final bool? showNavigationButtons;
+  final double? calendarHeight;
 
   const GridCalendarStyle({
     this.selectionColor,
@@ -25,6 +26,7 @@ class GridCalendarStyle {
     this.rowSpacing,
     this.otherMonthOpacity,
     this.showNavigationButtons,
+    this.calendarHeight,
   });
 
   GridCalendarStyle copyWith({
@@ -39,6 +41,7 @@ class GridCalendarStyle {
     double? rowSpacing,
     double? otherMonthOpacity,
     bool? showNavigationButtons,
+    double? calendarHeight,
   }) {
     return GridCalendarStyle(
       selectionColor: selectionColor ?? this.selectionColor,
@@ -53,6 +56,7 @@ class GridCalendarStyle {
       otherMonthOpacity: otherMonthOpacity ?? this.otherMonthOpacity,
       showNavigationButtons:
           showNavigationButtons ?? this.showNavigationButtons,
+      calendarHeight: calendarHeight ?? this.calendarHeight,
     );
   }
 }

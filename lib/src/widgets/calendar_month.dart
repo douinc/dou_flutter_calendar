@@ -34,7 +34,6 @@ class CalendarMonth extends StatelessWidget {
     }
     return Column(
       children: [
-        // Weekday header
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: CalendarUtils.getWeekdayNames(locale?.languageCode).map((
