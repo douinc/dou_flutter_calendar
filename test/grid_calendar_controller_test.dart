@@ -1,12 +1,13 @@
+import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
+import 'package:dou_flutter_calendar/src/models/calendar_enums.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dou_flutter_calendar/src/controllers/calendar_controller.dart';
 
 void main() {
-  group('CalendarController', () {
-    late CalendarController controller;
+  group('GridCalendarController', () {
+    late GridCalendarController controller;
 
     setUp(() {
-      controller = CalendarController(initialDate: DateTime(2024, 3, 15));
+      controller = GridCalendarController(initialDate: DateTime(2024, 3, 15));
     });
 
     test('initialDate sets correctly', () {

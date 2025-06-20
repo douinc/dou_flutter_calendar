@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/calendar_date.dart';
+import '../models/calendar_enums.dart';
 import '../models/calendar_style.dart';
-import '../controllers/calendar_controller.dart';
+import '../controllers/grid_calendar_controller.dart';
 import '../utils/calendar_utils.dart';
 import 'calendar_header.dart';
 import 'calendar_month.dart';
@@ -21,7 +22,7 @@ class GridCalendar extends StatefulWidget {
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
   final Widget Function(DateTime currentDate)? headerBuilder;
-  final CalendarController? controller;
+  final GridCalendarController? controller;
   final bool enableSwipe;
 
   const GridCalendar({

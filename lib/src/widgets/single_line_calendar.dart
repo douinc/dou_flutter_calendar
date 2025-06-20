@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'dart:async';
 
+import '../models/calendar_date.dart';
+import '../models/calendar_enums.dart';
+import '../models/calendar_style.dart';
 import 'calendar_header.dart';
+import '../controllers/single_line_calendar_controller.dart';
 
 // Constants for better maintainability
 class _CalendarConstants {
@@ -44,7 +47,7 @@ class SingleLineCalendar extends StatefulWidget {
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
   final Widget Function(DateTime currentDate)? headerBuilder;
-  final CalendarController? controller;
+  final SingleLineCalendarController? controller;
 
   const SingleLineCalendar({
     super.key,
