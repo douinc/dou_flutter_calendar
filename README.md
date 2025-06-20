@@ -186,23 +186,30 @@ SingleLineCalendar(
 )
 ```
 
-### Advanced Usage with Calendar Controller
+### Advanced Usage with a Controller
+
+You can programmatically control the calendar state using a controller. Use `GridCalendarController` for `GridCalendar` and `SingleLineCalendarController` for `SingleLineCalendar`.
+
+**Example with `GridCalendarController`:**
 
 ```dart
+import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
+import 'package:flutter/material.dart';
+
 class MyCalendarWidget extends StatefulWidget {
   @override
   _MyCalendarWidgetState createState() => _MyCalendarWidgetState();
 }
 
 class _MyCalendarWidgetState extends State<MyCalendarWidget> {
-  late CalendarController _controller;
-  
+  late GridCalendarController _controller;
+
   @override
   void initState() {
     super.initState();
-    _controller = CalendarController(initialDate: DateTime.now());
+    _controller = GridCalendarController(initialDate: DateTime.now());
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -210,12 +217,11 @@ class _MyCalendarWidgetState extends State<MyCalendarWidget> {
         // Calendar widget
         GridCalendar(
           controller: _controller,
-          initialDate: DateTime.now(),
           onDateSelected: (date) {
             print('Date selected via UI: $date');
           },
         ),
-        
+
         // Control buttons
         Wrap(
           spacing: 8.0,
@@ -249,7 +255,7 @@ class _MyCalendarWidgetState extends State<MyCalendarWidget> {
       ],
     );
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
@@ -332,7 +338,7 @@ GridCalendar(
 | `onDateSelected` | `Function(DateTime)?` | Single date selection callback | `null` |
 | `onDatesSelected` | `Function(List<CalendarDate>)?` | Multi-date selection callback | `null` |
 | `onMonthChanged` | `Function(DateTime)?` | Callback for month changes | `null` |
-| `controller` | `CalendarController?` | Calendar controller for programmatic control | `null` |
+| `controller` | `GridCalendarController?` | Calendar controller for programmatic control | `null` |
 | `dayBuilder` | `Widget Function(CalendarDate)?` | Custom day cell builder | `null` |
 | `headerBuilder` | `Widget Function(DateTime)?` | Custom header builder | `null` |
 | `days` | `List<CalendarDate>?` | Custom list of days to display | Auto-generated |
@@ -348,7 +354,7 @@ GridCalendar(
 | `style` | `SingleLineCalendarStyle?` | Custom styling options for single line view | Default style |
 | `headerDateFormat` | `String?` | Custom header date format | `null` |
 | `onDateSelected` | `Function(DateTime)?` | Date selection callback | `null` |
-| `controller` | `CalendarController?` | Calendar controller for programmatic control | `null` |
+| `controller` | `SingleLineCalendarController?` | Calendar controller for programmatic control | `null` |
 | `dayBuilder` | `Widget Function(CalendarDate)?` | Custom day cell builder | `null` |
 | `headerBuilder` | `Widget Function(DateTime)?` | Custom header builder | `null` |
 | `days` | `List<CalendarDate>?` | Custom list of days to display | Auto-generated |
@@ -377,7 +383,11 @@ GridCalendar(
 | `dateSpacing` | `double?` | Horizontal spacing between date items | `4.0` |
 | `showNavigationButtons` | `bool?` | Show navigation buttons in header | `true` |
 
-### CalendarController Methods
+### Controller Methods
+
+Controller methods allow you to programmatically interact with the calendars.
+
+#### `GridCalendarController` Methods
 
 | Method | Description | Triggers Callback |
 |--------|-------------|-------------------|
@@ -385,6 +395,18 @@ GridCalendar(
 | `navigateToDate(DateTime date)` | Navigate to date without selection | ❌ No |
 | `nextMonth()` | Move to next month | ❌ No |
 | `previousMonth()` | Move to previous month | ❌ No |
+| `goToMonth(int year, int month)` | Go to a specific month | ❌ No |
+| `nextDay()` | Move to next day | ✅ Yes |
+| `previousDay()` | Move to previous day | ✅ Yes |
+| `goToToday()` | Move to today | ✅ Yes |
+| `goToDate(int year, int month, int day)` | Go to specific date | ✅ Yes |
+
+#### `SingleLineCalendarController` Methods
+
+| Method | Description | Triggers Callback |
+|--------|-------------|-------------------|
+| `selectDate(DateTime date)` | Select a specific date | ✅ Yes |
+| `navigateToDate(DateTime date)` | Navigate to date without selection | ❌ No |
 | `nextDay()` | Move to next day | ✅ Yes |
 | `previousDay()` | Move to previous day | ✅ Yes |
 | `goToToday()` | Move to today | ✅ Yes |
