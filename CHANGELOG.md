@@ -1,3 +1,12 @@
+## 0.0.5
+
+* **BREAKING CHANGES**:
+  - Replaced the generic `CalendarController` with `GridCalendarController` and `SingleLineCalendarController` to provide specific APIs for each calendar type. `GridCalendar` now requires a `GridCalendarController` and `SingleLineCalendar` requires a `SingleLineCalendarController`.
+* **Improvements**:
+  - Updated `README.md` with detailed usage instructions for the new `GridCalendarController` and `SingleLineCalendarController`.
+  - Refactored controller logic to better separate concerns between grid and single-line calendars.
+  - `GridCalendarController` now includes month navigation methods like `nextMonth()`, `previousMonth()`, and `goToMonth()`.
+
 ## 0.0.4
 
 * **BREAKING CHANGES**:
