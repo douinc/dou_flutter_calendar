@@ -103,12 +103,15 @@ class _GridCalendarState extends State<GridCalendar> {
       final isSelection =
           widget.controller!.lastChangeType == CalendarChangeType.selection;
 
-      if (!isSelection) {
-        final targetPage = (newDate.year * 12) + newDate.month - 1;
-        if (_pageController.hasClients &&
-            _pageController.page?.round() != targetPage) {
-          _pageController.jumpToPage(targetPage);
-        }
+      // Calculate the page that corresponds to the controller's date
+      final targetPage = (newDate.year * 12) + newDate.month - 1;
+
+      // If the currently displayed page is not the desired one, jump to it.
+      // We do this for both navigation and programmatic selection changes so
+      // that the visible month always matches the controller's date.
+      if (_pageController.hasClients &&
+          _pageController.page?.round() != targetPage) {
+        _pageController.jumpToPage(targetPage);
       }
 
       setState(() {
