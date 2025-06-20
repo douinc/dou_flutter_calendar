@@ -61,6 +61,16 @@ class GridCalendarController extends ChangeNotifier {
     navigateToDate(DateTime(prevMonth.year, prevMonth.month, safeDay));
   }
 
+  /// Move to a specific month (navigation only, doesn't trigger selection)
+  void goToMonth(int year, int month) {
+    final targetDay = _currentDate.day;
+    final daysInTargetMonth = DateTime(year, month + 1, 0).day;
+    final safeDay = targetDay > daysInTargetMonth
+        ? daysInTargetMonth
+        : targetDay;
+    navigateToDate(DateTime(year, month, safeDay));
+  }
+
   /// Move to next day (selection with callbacks)
   void nextDay() {
     selectDate(_currentDate.add(const Duration(days: 1)));
