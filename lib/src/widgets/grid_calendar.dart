@@ -133,6 +133,9 @@ class _GridCalendarState extends State<GridCalendar> {
       if (isSelection) {
         widget.onDateSelected?.call(newDate);
         widget.onDatesSelected?.call(_selectedDates);
+      } else {
+        // Call onMonthChanged for navigation changes
+        widget.onMonthChanged?.call(newDate);
       }
     }
   }
@@ -228,6 +231,9 @@ class _GridCalendarState extends State<GridCalendar> {
       height: calendarHeight,
       child: PageView.builder(
         controller: _pageController,
+        physics: widget.enableSwipe
+            ? const PageScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
         onPageChanged: (pageIndex) {
           final year = pageIndex ~/ 12;
           final month = (pageIndex % 12) + 1;

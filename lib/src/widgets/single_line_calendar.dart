@@ -48,6 +48,7 @@ class SingleLineCalendar extends StatefulWidget {
   final Widget Function(CalendarDate calendarDate)? dayBuilder;
   final Widget Function(DateTime currentDate)? headerBuilder;
   final SingleLineCalendarController? controller;
+  final bool enableSwipe;
 
   const SingleLineCalendar({
     super.key,
@@ -61,6 +62,7 @@ class SingleLineCalendar extends StatefulWidget {
     this.dayBuilder,
     this.headerBuilder,
     this.controller,
+    this.enableSwipe = true,
   });
 
   @override
@@ -586,6 +588,9 @@ class _SingleLineCalendarState extends State<SingleLineCalendar>
           ignoring: _isScrollAnimating,
           child: PageView.builder(
             controller: _pageController!,
+            physics: widget.enableSwipe
+                ? const PageScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
             pageSnapping: true,
             onPageChanged: _onPageChanged,
             itemCount: _days.length,

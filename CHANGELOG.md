@@ -1,3 +1,13 @@
+## 0.0.6
+
+* **Bug Fixes**:
+  - Fixed `enableSwipe` parameter not being applied to PageView physics in `GridCalendar`, preventing proper swipe disabling.
+  - Fixed `onMonthChanged` callback not being triggered when using `GridCalendarController` for month navigation (via `navigateToDate()`, `nextMonth()`, `previousMonth()`, etc.).
+* **Improvements**:
+  - Enhanced PageView to properly respect the `enableSwipe` setting using appropriate scroll physics in both `GridCalendar` and `SingleLineCalendar`.
+  - Ensured `onMonthChanged` callback is now called for all month navigation changes in `GridCalendar`, including controller-based navigation.
+  - Added `enableSwipe` parameter to `SingleLineCalendar` for consistent API across calendar widgets.
+
 ## 0.0.5
 
 * **BREAKING CHANGES**:
