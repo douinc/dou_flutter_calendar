@@ -25,6 +25,12 @@ class GridCalendar extends StatefulWidget {
   final GridCalendarController? controller;
   final bool enableSwipe;
 
+  /// The weekday the week starts on. When `null` (default) the calendar follows
+  /// the convention of [locale] (e.g. Sunday for `ko`/`en_US`, Monday for
+  /// `en_GB`/`fr`). Pass an explicit value such as [StartingDayOfWeek.monday]
+  /// to force a specific first day regardless of locale.
+  final StartingDayOfWeek? firstDayOfWeek;
+
   const GridCalendar({
     super.key,
     this.initialDate,
@@ -41,6 +47,7 @@ class GridCalendar extends StatefulWidget {
     this.headerBuilder,
     this.controller,
     this.enableSwipe = true,
+    this.firstDayOfWeek,
   });
 
   @override
@@ -226,6 +233,10 @@ class _GridCalendarState extends State<GridCalendar> {
 
   Widget _buildPageView() {
     final calendarHeight = widget.style?.calendarHeight ?? 440.0;
+    final firstDayOfWeek = CalendarUtils.resolveFirstDayOfWeek(
+      widget.firstDayOfWeek,
+      widget.locale?.languageCode,
+    );
 
     return SizedBox(
       height: calendarHeight,
@@ -252,7 +263,10 @@ class _GridCalendarState extends State<GridCalendar> {
           final month = (pageIndex % 12) + 1;
           final dateForPage = DateTime(year, month, 1);
 
-          final days = CalendarUtils.getDaysInMonth(dateForPage);
+          final days = CalendarUtils.getDaysInMonth(
+            dateForPage,
+            firstDayOfWeek: firstDayOfWeek,
+          );
 
           return CalendarMonth(
             days: days,
@@ -263,6 +277,7 @@ class _GridCalendarState extends State<GridCalendar> {
             style: widget.style,
             locale: widget.locale,
             dayItemBuilder: widget.dayBuilder,
+            firstDayOfWeek: firstDayOfWeek,
           );
         },
       ),

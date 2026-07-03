@@ -15,6 +15,11 @@ class CalendarMonth extends StatelessWidget {
   final Locale? locale;
   final Widget Function(CalendarDate calendarDate)? dayItemBuilder;
 
+  /// The weekday that occupies the first column, as a Dart weekday value
+  /// (`DateTime.monday` == 1 ... `DateTime.sunday` == 7). Must match the value
+  /// used to build [days] so the header labels align with the date cells.
+  final int firstDayOfWeek;
+
   const CalendarMonth({
     super.key,
     required this.days,
@@ -25,6 +30,7 @@ class CalendarMonth extends StatelessWidget {
     this.style,
     this.locale,
     this.dayItemBuilder,
+    this.firstDayOfWeek = DateTime.sunday,
   });
 
   @override
@@ -36,9 +42,10 @@ class CalendarMonth extends StatelessWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: CalendarUtils.getWeekdayNames(locale?.languageCode).map((
-            weekday,
-          ) {
+          children: CalendarUtils.getWeekdayNames(
+            locale?.languageCode,
+            firstDayOfWeek,
+          ).map((weekday) {
             return Expanded(
               child: Center(
                 child: Text(weekday, style: style?.weekdayTextStyle),

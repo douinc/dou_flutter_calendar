@@ -42,6 +42,7 @@ A highly customizable and feature-rich calendar widget for Flutter applications.
   - Japanese (日本語, ja)
   - Chinese (中文, zh)
 - **Flexible Date Formatting**: Custom date formats for headers
+- **Configurable First Day of Week**: Start the week on any weekday, or follow the locale's convention automatically
 - **Custom Day and Header Rendering**: Full control over individual day cells and calendar headers
 - **Calendar Controller**: Programmatic control over calendar state with navigation and selection modes
 - **Advanced Single Line Calendar**: 
@@ -157,6 +158,27 @@ GridCalendar(
   },
 )
 ```
+
+### Setting the First Day of the Week
+
+By default `GridCalendar` starts each week on the day that matches the `locale`'s
+convention (Sunday for `ko`/`en_US`/`ja`, Monday for `en_GB`/`fr`, and so on),
+just like Flutter's built-in `CalendarDatePicker`. Pass `firstDayOfWeek` to force
+a specific starting day regardless of locale:
+
+```dart
+GridCalendar(
+  locale: const Locale('ko'),
+  // Start the week on Monday even though the Korean convention is Sunday.
+  firstDayOfWeek: StartingDayOfWeek.monday,
+  onDateSelected: (DateTime date) {
+    // Handle date selection
+  },
+)
+```
+
+Leave `firstDayOfWeek` unset (`null`) to keep the locale-based default. The
+weekday header labels and the date grid always stay aligned to the chosen day.
 
 ### Single Line Calendar with Advanced Features
 
@@ -343,6 +365,7 @@ GridCalendar(
 | `headerBuilder` | `Widget Function(DateTime)?` | Custom header builder | `null` |
 | `days` | `List<CalendarDate>?` | Custom list of days to display | Auto-generated |
 | `enableSwipe` | `bool` | Enable swiping to change months | `true` |
+| `firstDayOfWeek` | `StartingDayOfWeek?` | Weekday the week starts on. `null` follows the `locale` convention | `null` |
 
 ### `SingleLineCalendar` Properties
 

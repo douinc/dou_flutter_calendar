@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dou_flutter_calendar/src/widgets/grid_calendar.dart';
 import 'package:dou_flutter_calendar/src/widgets/single_line_calendar.dart';
 import 'package:dou_flutter_calendar/src/models/calendar_date.dart';
+import 'package:dou_flutter_calendar/src/models/calendar_enums.dart';
 import 'package:dou_flutter_calendar/src/models/calendar_style.dart';
 
 void main() {
@@ -130,5 +131,47 @@ void main() {
     // Verify that the locale is passed to the GridCalendar
     final gridCalendar = tester.widget<GridCalendar>(find.byType(GridCalendar));
     expect(gridCalendar.locale, const Locale('ko', 'KR'));
+  });
+
+  testWidgets('GridCalendar renders a Monday-first header when requested', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: GridCalendar(
+            initialDate: DateTime(2024, 3, 1),
+            locale: const Locale('ko', 'KR'),
+            firstDayOfWeek: StartingDayOfWeek.monday,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // The header column for Monday (월) must sit to the left of Sunday (일).
+    final mondayX = tester.getCenter(find.text('월')).dx;
+    final sundayX = tester.getCenter(find.text('일')).dx;
+    expect(mondayX, lessThan(sundayX));
+  });
+
+  testWidgets('GridCalendar follows locale convention when firstDayOfWeek is '
+      'omitted (ko -> Sunday first)', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: GridCalendar(
+            initialDate: DateTime(2024, 3, 1),
+            locale: const Locale('ko', 'KR'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Korean convention starts the week on Sunday, so 일 is the first column.
+    final sundayX = tester.getCenter(find.text('일')).dx;
+    final mondayX = tester.getCenter(find.text('월')).dx;
+    expect(sundayX, lessThan(mondayX));
   });
 }
