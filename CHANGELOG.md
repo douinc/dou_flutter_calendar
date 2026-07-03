@@ -1,3 +1,10 @@
+## 0.0.7
+
+* **New Features**:
+  - Added `firstDayOfWeek` parameter to `GridCalendar` (via the new `StartingDayOfWeek` enum) to control which weekday the week starts on. When left `null`, the calendar follows the `locale`'s convention (Sunday for `ko`/`en_US`/`ja`, Monday for `en_GB`/`fr`), matching Flutter's built-in `CalendarDatePicker`.
+* **Bug Fixes**:
+  - Fixed the `GridCalendar` weekday header being rendered Sunday-first (from intl defaults) while the date grid was laid out Monday-first, which left the header labels misaligned with the date cells by one column. The header and grid now always share the same starting weekday.
+
 ## 0.0.6
 
 * **Bug Fixes**:

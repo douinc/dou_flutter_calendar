@@ -1,4 +1,5 @@
 export 'src/models/calendar_date.dart';
+export 'src/models/calendar_enums.dart';
 export 'src/models/calendar_style.dart';
 export 'src/controllers/grid_calendar_controller.dart';
 export 'src/controllers/single_line_calendar_controller.dart';

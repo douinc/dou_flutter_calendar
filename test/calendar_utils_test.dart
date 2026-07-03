@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dou_flutter_calendar/src/utils/calendar_utils.dart';
+import 'package:dou_flutter_calendar/src/models/calendar_enums.dart';
 
 void main() {
   group('CalendarUtils', () {
@@ -65,6 +66,81 @@ void main() {
       expect(weekdays[4], '목'); // Thursday
       expect(weekdays[5], '금'); // Friday
       expect(weekdays[6], '토'); // Saturday
+    });
+
+    group('firstDayOfWeek', () {
+      test('getDaysInMonth defaults to a Monday-first grid', () {
+        final days = CalendarUtils.getDaysInMonth(DateTime(2024, 3, 1));
+        // March 1, 2024 is a Friday, so the grid starts on the preceding Monday.
+        expect(days.first.date, DateTime(2024, 2, 26));
+        expect(days.first.date.weekday, DateTime.monday);
+      });
+
+      test('getDaysInMonth honours a Sunday-first grid', () {
+        final days = CalendarUtils.getDaysInMonth(
+          DateTime(2024, 3, 1),
+          firstDayOfWeek: DateTime.sunday,
+        );
+        expect(days.length, 42);
+        expect(days.first.date, DateTime(2024, 2, 25));
+        expect(days.first.date.weekday, DateTime.sunday);
+      });
+
+      test('getDaysInMonth honours a Saturday-first grid', () {
+        final days = CalendarUtils.getDaysInMonth(
+          DateTime(2024, 3, 1),
+          firstDayOfWeek: DateTime.saturday,
+        );
+        expect(days.first.date.weekday, DateTime.saturday);
+      });
+
+      test('getWeekdayNames rotates to a Monday-first order (en)', () {
+        final weekdays = CalendarUtils.getWeekdayNames('en', DateTime.monday);
+        expect(weekdays, ['M', 'T', 'W', 'T', 'F', 'S', 'S']);
+      });
+
+      test('getWeekdayNames rotates to a Monday-first order (ko)', () {
+        final weekdays = CalendarUtils.getWeekdayNames('ko', DateTime.monday);
+        expect(weekdays, ['월', '화', '수', '목', '금', '토', '일']);
+      });
+
+      test('resolveFirstDayOfWeek maps an explicit enum to a Dart weekday', () {
+        expect(
+          CalendarUtils.resolveFirstDayOfWeek(StartingDayOfWeek.monday),
+          DateTime.monday,
+        );
+        expect(
+          CalendarUtils.resolveFirstDayOfWeek(StartingDayOfWeek.sunday),
+          DateTime.sunday,
+        );
+        expect(
+          CalendarUtils.resolveFirstDayOfWeek(StartingDayOfWeek.saturday),
+          DateTime.saturday,
+        );
+      });
+
+      test('resolveFirstDayOfWeek follows locale convention when null', () {
+        // Korea, the US and Japan conventionally start the week on Sunday.
+        expect(CalendarUtils.resolveFirstDayOfWeek(null, 'ko'), DateTime.sunday);
+        expect(
+          CalendarUtils.resolveFirstDayOfWeek(null, 'en_US'),
+          DateTime.sunday,
+        );
+        // The UK and France start the week on Monday.
+        expect(
+          CalendarUtils.resolveFirstDayOfWeek(null, 'en_GB'),
+          DateTime.monday,
+        );
+        expect(CalendarUtils.resolveFirstDayOfWeek(null, 'fr'), DateTime.monday);
+      });
+
+      test('resolveFirstDayOfWeek prefers explicit value over locale', () {
+        // Even for a Sunday-first locale, an explicit Monday wins.
+        expect(
+          CalendarUtils.resolveFirstDayOfWeek(StartingDayOfWeek.monday, 'ko'),
+          DateTime.monday,
+        );
+      });
     });
   });
 }

@@ -1,5 +1,4 @@
 import 'package:dou_flutter_calendar/dou_flutter_calendar.dart';
-import 'package:dou_flutter_calendar/src/models/calendar_enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
